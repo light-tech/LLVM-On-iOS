@@ -3,13 +3,12 @@
 
 DOWNLOADS=~/Downloads
 
-# Generate configuration for building for iOS Target (on MacOS Host)
+# Generate configuration for building for Host (for use in iOS simulator)
 cmake -G "Ninja" \
   -DLLVM_ENABLE_PROJECTS="clang;lld" \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=$DOWNLOADS/llvm \
-  -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
-  -DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake \
+  -DCMAKE_INSTALL_PREFIX=$DOWNLOADS/LLVM-Host \
+  -DCMAKE_OSX_ARCHITECTURES="x86_64" \
   -DCMAKE_MAKE_PROGRAM=$DOWNLOADS/ninja \
   ../llvm
 
