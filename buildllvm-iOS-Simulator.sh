@@ -12,6 +12,13 @@ SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
 # CMAKE_OSX_SYSROOT for the simulator SDK instead of letting the CMAKE find it.
 cmake -G "Ninja" \
   -DLLVM_ENABLE_PROJECTS="clang;lld" \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DLLVM_ENABLE_ZLIB=OFF \
+  -DLLVM_ENABLE_THREADS=OFF \
+  -DLLVM_ENABLE_UNWIND_TABLES=OFF \
+  -DLLVM_ENABLE_EH=ON \
+  -DLLVM_ENABLE_RTTI=ON \
+  -DLLVM_ENABLE_TERMINFO=OFF \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$DOWNLOADS/LLVM-iOS-Sim \
   -DCMAKE_OSX_ARCHITECTURES="x86_64" \
