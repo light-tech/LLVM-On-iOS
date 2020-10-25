@@ -1,9 +1,8 @@
-# Assuming cmake was added to $PATH
-# Assuming ninja was downloaded and extracted to ~/Downloads
+# Script to build LLVM for the host machine
 
 DOWNLOADS=~/Downloads
 
-# Generate configuration for building for Host (for use in iOS simulator)
+# Generate configuration for building for host
 cmake -G "Ninja" \
   -DLLVM_ENABLE_PROJECTS="clang;lld" \
   -DCMAKE_BUILD_TYPE=Release \

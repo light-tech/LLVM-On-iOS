@@ -1,11 +1,14 @@
-# Run in a build folder of the extracted LLVM repo
-# Assuming cmake was added to $PATH
-# Assuming ninja was downloaded and extracted to ~/Downloads
+# Script to build LLVM for iOS Simulator
+# Execute in top `llvm-project` folder
 
 DOWNLOADS=~/Downloads
 
 # Use xcodebuild -showsdks to find out the available SDK name
 SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
+
+rm -rf build_ios_sim
+mkdir build_ios_sim
+cd build_ios_sim
 
 # Generate configuration for building for iOS Simulator
 # After reading iOS.cmake, one realizes that the key idea (and difference to building for iOS device) is to set

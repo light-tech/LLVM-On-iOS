@@ -1,8 +1,11 @@
-# Run in a build folder of the extracted LLVM repo
-# Assuming cmake was added to $PATH
-# Assuming ninja was downloaded and extracted to ~/Downloads
+# Script to build LLVM for iOS Device
+# Execute in top `llvm-project` folder
 
 DOWNLOADS=~/Downloads
+
+rm -rf build_ios
+mkdir build_ios
+cd build_ios
 
 # Generate configuration for building for iOS Target (on MacOS Host)
 cmake -G "Ninja" \
