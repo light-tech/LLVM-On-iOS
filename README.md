@@ -20,3 +20,43 @@ Our script [buildllvm-iOS.sh](buildllvm-iOS.sh) and [buildllvm-iOS-Simulator.sh]
 
 Once the tools are ready, run the script in the `llvm-project` top folder (or `llvm-project-VERSION` if you download the source zipped package instead of cloning).
 Once the build process is completed, the library and include headers should be available at `~/Download/LLVM-iOS` or `~/Download/LLVM-iOS-Simulator`.
+
+Usage in iOS App
+----------------
+
+1. Before being able to use in Xcode, in the built folder, we first need to move the `lib/clang/` and `lib/cmake` and `lib/*.dylib` out of `lib/`:
+```shell
+    cd ~/Download/LLVM-iOS
+    mkdir lib2
+    mv lib/clang lib2/
+    mv lib/cmake lib2/
+    mv lib/*.dylib lib2/
+```
+Otherwise, iOS will crash when loading dynamic libraries.
+
+2. Create a new iOS app project in Xcode, say `Sample` and copy the built folder, say `~/Download/LLVM-iOS-Simulator`, to the root folder of your project:
+```shell
+    cp ~/Download/LLVM-iOS-Simulator LLVM  # Assuming at Sample project folder
+```
+We shall assume the target folder is `LLVM`. Note that you must copy the `LLVM-iOS-Simulator` when running on simulator.
+
+3. Add the LLVM static libraries to your project by right click on the Sample project, choose **Add files to "YOUR PROJECT NAME"** and select the **LLVM/lib** folder.
+Enable **Create groups** but not **Copy items if needed**.
+
+4. Next, we add `LLVM/include` to header search path.
+Go to **Build settings** your project, click on **All** and search for `header`.
+You should find **Header Search Paths** under **Search Paths**.
+Add a new item `$(PROJECT_DIR)/LLVM/include`.
+
+![Header Search Paths Setting](HeaderSearchPaths.png)
+
+5. Finally, you probably want to write your app in Swift but LLVM library is written in C++ so we need to create a bridge to expose LLVM backend to your app Swift frontend.
+This is accomplished via Objective-C i.e. Swift -> Objective-C -> C++.
+Add to your project a new header file, say `LLVMBridge.h` and the implementation Objective-C++ file, say `LLVMBridge.mm`.
+We set Objective-C bridging header to expose the Objective-C (and hence, C++) code to Swift.
+Go to **Build settings** your project and search for `bridg` and you should find **Objective-C Bridging Header** under **Swift Compiler - General**.
+Set it to `Sample/LLVMBridge.h` or a header file of your choice (but that header should include `LLVMBridge.h`).
+
+![Objective-C Bridging Header Setting](ObjCBridgeHeader.png)
+
+Now you are ready to make use of LLVM glory.
