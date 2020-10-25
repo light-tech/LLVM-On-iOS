@@ -60,3 +60,12 @@ Set it to `Sample/LLVMBridge.h` or a header file of your choice (but that header
 ![Objective-C Bridging Header Setting](ObjCBridgeHeader.png)
 
 Now you are ready to make use of LLVM glory.
+
+Our Sample iOS Project
+----------------------
+
+We provide a sample iOS app project in the [Sample/](Sample) folder; no license attached so feel free to do whatever you want with it.
+In this project, we use Clang's C interpreter example located in `examples/clang-interpreter/main.cpp` of Clang source code to interpret a simple C++ program.
+The code is pretty much copied verbatim except for a minor modification, namely: We change the `main` function name to `clangInterpret` since iOS app already has `main` function.
+At this point, you can only see the program's [standard] output in Xcode output panel.
+We will attempt to redirect the output to the app UI in the future.
