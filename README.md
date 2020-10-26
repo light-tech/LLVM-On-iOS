@@ -41,11 +41,13 @@ In this project, we use Clang's C interpreter example located in `examples/clang
 The code is pretty much copied verbatim except for some minor modifications, namely:
 
 1. We change the `main` function name to `clangInterpret` since iOS app already has `main` function.
+
 2. We comment out the last line
 ```c++
 // llvm::llvm_shutdown();
 ```
 so that you can call `clangInterpret` again in the app. Originally, the example was a one-shot command line program where this makes sense.
+
 3. We add a third parameter
 ```c++
 llvm::raw_ostream &errorOutputStream
@@ -88,3 +90,20 @@ Set it to `Sample/LLVMBridge.h` or a header file of your choice (but that header
 ![Objective-C Bridging Header Setting](ObjCBridgeHeader.png)
 
 Now you are ready to make use of LLVM glory.
+
+Further Readings
+----------------
+
+You might want to start with _Anthony Nguyen_'s 
+[Using C++ in Objective-C iOS app: My first walk](https://medium.com/@nguyenminhphuc/using-c-in-objective-c-ios-app-my-first-walk-77319d94a940)
+for a quick intro on how to make use of C++ in Swift.
+This is the basis for our Sample app.
+
+More advanced coverage on interoperability could be found in
+[Understanding Objective-C and Swift interoperability](https://rderik.com/blog/understanding-objective-c-and-swift-interoperability/#expose-swift-code-to-objective-c)
+by _RDerik_ and
+[Advanced ObjC <-> Swift Interoperability](https://academy.realm.io/posts/altconf-nikita-lutsenko-objc-swift-interoperability/)
+by _Nikita Lutsenko_.
+
+Last but not least, _Apple_'s [Programming with Objective-C](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html#//apple_ref/doc/uid/TP40011210)
+is fairly useful in helping us write the Objective-C bridging class: Once we pass to C++, we are in our home turf.
