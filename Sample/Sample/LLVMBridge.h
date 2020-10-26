@@ -11,9 +11,21 @@
 
 #import <Foundation/Foundation.h>
 
+
+/// Class to encapsulate the interpreter's output
+@interface LLVMInterpreterOutput : NSObject
+
+@property NSString* _Nullable compilationOutput;
+@property NSString* _Nullable programOutput;
+
+@end
+
+
+/// Class (intended to be single-instanced) to provide LLVM C++ service to Swift front-end
 @interface LLVMBridge : NSObject
 
-- (void)interpretProgram:(nonnull NSData*)fileName;
+// Interpret the C++ source code file
+- (nonnull LLVMInterpreterOutput*)interpretProgram:(nonnull NSData*)fileName;
 
 @end
 

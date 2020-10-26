@@ -117,14 +117,14 @@ public:
 
 llvm::ExitOnError ExitOnErr;
 
-int clangInterpret(int argc, const char **argv) {
+int clangInterpret(int argc, const char **argv, llvm::raw_ostream &errorOutputStream) {
   // This just needs to be some symbol in the binary; C++ doesn't
   // allow taking the address of ::main however.
   void *MainAddr = (void*) (intptr_t) GetExecutablePath;
   std::string Path = GetExecutablePath(argv[0], MainAddr);
   IntrusiveRefCntPtr<DiagnosticOptions> DiagOpts = new DiagnosticOptions();
   TextDiagnosticPrinter *DiagClient =
-    new TextDiagnosticPrinter(llvm::errs(), &*DiagOpts);
+    new TextDiagnosticPrinter(errorOutputStream, &*DiagOpts);
 
   IntrusiveRefCntPtr<DiagnosticIDs> DiagID(new DiagnosticIDs());
   DiagnosticsEngine Diags(DiagID, &*DiagOpts, DiagClient);
@@ -179,9 +179,9 @@ int clangInterpret(int argc, const char **argv) {
 
   // Show the invocation, with -v.
   if (CI->getHeaderSearchOpts().Verbose) {
-    llvm::errs() << "clang invocation:\n";
-    Jobs.Print(llvm::errs(), "\n", true);
-    llvm::errs() << "\n";
+    errorOutputStream << "clang invocation:\n";
+    Jobs.Print(errorOutputStream, "\n", true);
+    errorOutputStream << "\n";
   }
 
   // FIXME: This is copied from cc1_main.cpp; simplify and eliminate.
@@ -191,7 +191,7 @@ int clangInterpret(int argc, const char **argv) {
   Clang.setInvocation(std::move(CI));
 
   // Create the compilers actual diagnostics engine.
-  Clang.createDiagnostics();
+  Clang.createDiagnostics(DiagClient, false);
   if (!Clang.hasDiagnostics())
     return 1;
 
@@ -223,7 +223,7 @@ int clangInterpret(int argc, const char **argv) {
   }
 
   // Shutdown.
-  llvm::llvm_shutdown();
+  // llvm::llvm_shutdown();
 
   return Res;
 }

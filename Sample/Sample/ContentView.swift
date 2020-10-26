@@ -15,34 +15,54 @@ let llvm: LLVMBridge = LLVMBridge()
 
 struct ContentView: View {
 
-    @State var output: String = "Clang output goes here!"
+    @State var program: String = """
+extern "C" void printf(const char* fmt, ...);
+
+extern "C" void AppConsolePrint(const char *str);
+
+int main() {
+    printf("Hello world!");
+    AppConsolePrint("Hello world!");
+    return 0;
+}
+"""
+
+    @State var compilationOutput: String = ""
+    @State var programOutput: String = ""
+    @State var selectedView = 0
 
     var body: some View {
-        VStack {
-            Button("Interpret Sample Program", action: interpretSampleProgram)
-            Text(output)
+        TabView(selection: $selectedView) {
+            VStack {
+                Button("Interpret Sample Program", action: interpretSampleProgram)
+                TextEditor(text: $program)
+            }.tabItem {
+                    Image(systemName: "doc.plaintext")
+                    Text("Source code")
+                }.tag(0)
+            VStack {
+                Text(compilationOutput)
+                Text(programOutput)
+            }.tabItem {
+                    Image(systemName: "greaterthan.square")
+                    Text("Output")
+                }.tag(1)
         }
     }
 
     func interpretSampleProgram() {
         // Prepare a sample C++ source code file hello.cpp
         let filePath = applicationSupportPath[0] + "hello.cpp"
-        let fileContent = """
-extern "C" void printf(const char* fmt, ...);
-extern "C" void testFunction();
-int main() {
-    testFunction();
-    printf("Hello world!");
-    return 0;
-}
-"""
+
         FileManager.default.createFile(atPath: filePath,
-                                       contents: fileContent.data(using: .utf8)!,
+                                       contents: program.data(using: .utf8)!,
                                        attributes: nil)
 
         // Compile and interpret the program
         print("Interpret sample program at ", filePath)
-        llvm.interpretProgram(filePath.data(using: .utf8)!)
+        let output = llvm.interpretProgram(filePath.data(using: .utf8)!)
+        compilationOutput = output.compilationOutput!
+        programOutput = output.programOutput!
     }
 }
 
