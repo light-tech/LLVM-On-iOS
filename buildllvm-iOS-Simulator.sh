@@ -14,13 +14,15 @@ cd build_ios_sim
 # After reading iOS.cmake, one realizes that the key idea (and difference to building for iOS device) is to set
 # CMAKE_OSX_SYSROOT for the simulator SDK instead of letting the CMAKE find it.
 cmake -G "Ninja" \
-  -DLLVM_ENABLE_PROJECTS="clang;lld" \
+  -DLLVM_ENABLE_PROJECTS="clang;lld;libcxx;libcxxabi" \
+  -DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
+  -DLLVM_BUILD_TOOLS=OFF \
   -DBUILD_SHARED_LIBS=OFF \
   -DLLVM_ENABLE_ZLIB=OFF \
   -DLLVM_ENABLE_THREADS=OFF \
   -DLLVM_ENABLE_UNWIND_TABLES=OFF \
-  -DLLVM_ENABLE_EH=ON \
-  -DLLVM_ENABLE_RTTI=ON \
+  -DLLVM_ENABLE_EH=OFF \
+  -DLLVM_ENABLE_RTTI=OFF \
   -DLLVM_ENABLE_TERMINFO=OFF \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$DOWNLOADS/LLVM-iOS-Sim \

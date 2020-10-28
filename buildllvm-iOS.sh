@@ -8,14 +8,17 @@ mkdir build_ios
 cd build_ios
 
 # Generate configuration for building for iOS Target (on MacOS Host)
+# Note: AArch64 = arm64
 cmake -G "Ninja" \
-  -DLLVM_ENABLE_PROJECTS="clang;lld" \
+  -DLLVM_ENABLE_PROJECTS="clang;lld;libcxx;libcxxabi" \
+  -DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
+  -DLLVM_BUILD_TOOLS=OFF \
   -DBUILD_SHARED_LIBS=OFF \
   -DLLVM_ENABLE_ZLIB=OFF \
   -DLLVM_ENABLE_THREADS=OFF \
   -DLLVM_ENABLE_UNWIND_TABLES=OFF \
-  -DLLVM_ENABLE_EH=ON \
-  -DLLVM_ENABLE_RTTI=ON \
+  -DLLVM_ENABLE_EH=OFF \
+  -DLLVM_ENABLE_RTTI=OFF \
   -DLLVM_ENABLE_TERMINFO=OFF \
   -DLLVM_TARGET_ARCH="arm64" \
   -DCMAKE_BUILD_TYPE=Release \

@@ -13,4 +13,4 @@ mkdir lib2
 mv lib/clang lib2/
 mv lib/cmake lib2/
 mv lib/*.dylib lib2/
-
+mv lib/libc++* lib2/
