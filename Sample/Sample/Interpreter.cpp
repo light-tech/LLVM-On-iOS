@@ -6,6 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include <TargetConditionals.h>
+
 #include "clang/Basic/DiagnosticOptions.h"
 #include "clang/CodeGen/CodeGenAction.h"
 #include "clang/Driver/Compilation.h"
@@ -73,9 +75,14 @@ private:
 
 public:
   static Expected<std::unique_ptr<SimpleJIT>> Create() {
+#if TARGET_OS_SIMULATOR
     auto JTMB = JITTargetMachineBuilder::detectHost();
     if (!JTMB)
       return JTMB.takeError();
+#else
+    // FIXME: Memory leaks
+    auto JTMB = new JITTargetMachineBuilder(Triple("arm64-apple-darwin"));
+#endif
 
     auto TM = JTMB->createTargetMachine();
     if (!TM)
@@ -129,7 +136,11 @@ int clangInterpret(int argc, const char **argv, llvm::raw_ostream &errorOutputSt
   IntrusiveRefCntPtr<DiagnosticIDs> DiagID(new DiagnosticIDs());
   DiagnosticsEngine Diags(DiagID, &*DiagOpts, DiagClient);
 
+#if TARGET_OS_SIMULATOR
   const std::string TripleStr = llvm::sys::getProcessTriple();
+#else
+  const std::string TripleStr = "arm64-apple-darwin";
+#endif
   llvm::Triple T(TripleStr);
 
   // Use ELF on Windows-32 and MingW for now.
