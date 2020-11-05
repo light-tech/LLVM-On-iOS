@@ -80,8 +80,18 @@ Here, we copy the `LLVM-iOS-Simulator` to build the app and run it on the simula
 
 Read on for details on how to create and configure your own project.
 
-**Known Limitation**: For simulator, can only build **Debug** version only!
-The current app does not work on real device yet (UI is OK but cannot interpret)!
+### Known Limitation
+For simulator, can only build **Debug** version only!
+Do NOT expect the app to work on real iPhone due to iOS security preventing [Just-In-Time (JIT) Execution](https://saagarjha.com/blog/2020/02/23/jailed-just-in-time-compilation-on-ios/) that the interpreter example was doing.
+By pulling out the device crash logs, the reason turns out to be the fact the [code generated in-memory by LLVM/Clang wasn't signed](http://iphonedevwiki.net/index.php/Code_Signing) and so the app was terminated with SIGTERM CODESIGN.
+(It does work sometimes if one launches the app from Xcode though.)
+If there is compilation error, the error message was printed out instead of crashing as expected:
+
+![Add #include non-existing header](Screenshot_Real_iPhone1.png)
+![Compilation error was printed out](Screenshot_Real_iPhone2.png)
+
+To make the app work on real iPhone, compilation into binary, somehow sign it and use [system()](https://stackoverflow.com/questions/32439095/how-to-execute-a-command-line-in-iphone) is a possibility.
+Another possibility would be to use the slower LLVM bytecode interpreter instead of ORC JIT that the example was doing, as many [existing terminal apps](https://opensource.com/article/20/9/run-linux-ios) illustrated.
 
 Behind the Scene: Configure iOS App Xcode Project
 -------------------------------------------------
