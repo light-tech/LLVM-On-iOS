@@ -84,7 +84,7 @@ Read on for details on how to create and configure your own project.
 For simulator, can only build **Debug** version only!
 Do NOT expect the app to work on real iPhone due to iOS security preventing [Just-In-Time (JIT) Execution](https://saagarjha.com/blog/2020/02/23/jailed-just-in-time-compilation-on-ios/) that the interpreter example was doing.
 By pulling out the device crash logs, the reason turns out to be the fact the [code generated in-memory by LLVM/Clang wasn't signed](http://iphonedevwiki.net/index.php/Code_Signing) and so the app was terminated with SIGTERM CODESIGN.
-(It does work sometimes if one launches the app from Xcode though.)
+(It does work sometimes if one [launches the app from Xcode](https://9to5mac.com/2020/11/06/ios-14-2-brings-jit-compilation-support-which-enables-emulation-apps-at-full-performance/) though.)
 If there is compilation error, the error message was printed out instead of crashing as expected:
 
 ![Add #include non-existing header](Screenshot_Real_iPhone1.png)
