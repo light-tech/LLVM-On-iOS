@@ -9,6 +9,10 @@ cd build_ios
 
 # Generate configuration for building for iOS Target (on MacOS Host)
 # Note: AArch64 = arm64
+# Note: We have to use include/ffi subdir for libffi as the main header ffi.h
+# includes <ffi_arm64.h> and not <ffi/ffi_arm64.h>. So if we only use
+# $DOWNLOADS/libffi/Release-iphoneos/include for FFI_INCLUDE_DIR
+# the platform-specific header would not be found!
 cmake -G "Ninja" \
   -DLLVM_ENABLE_PROJECTS="clang;lld;libcxx;libcxxabi" \
   -DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
@@ -20,6 +24,9 @@ cmake -G "Ninja" \
   -DLLVM_ENABLE_EH=OFF \
   -DLLVM_ENABLE_RTTI=OFF \
   -DLLVM_ENABLE_TERMINFO=OFF \
+  -DLLVM_ENABLE_FFI=ON \
+  -DFFI_INCLUDE_DIR=$DOWNLOADS/libffi/Release-iphoneos/include/ffi \
+  -DFFI_LIBRARY_DIR=$DOWNLOADS/libffi/Release-iphoneos \
   -DLLVM_TARGET_ARCH="arm64" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$DOWNLOADS/LLVM-iOS \

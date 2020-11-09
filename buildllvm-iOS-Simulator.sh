@@ -24,6 +24,9 @@ cmake -G "Ninja" \
   -DLLVM_ENABLE_EH=OFF \
   -DLLVM_ENABLE_RTTI=OFF \
   -DLLVM_ENABLE_TERMINFO=OFF \
+  -DLLVM_ENABLE_FFI=ON \
+  -DFFI_INCLUDE_DIR=$DOWNLOADS/libffi/Release-iphonesimulator/include/ffi \
+  -DFFI_LIBRARY_DIR=$DOWNLOADS/libffi/Release-iphonesimulator/ \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$DOWNLOADS/LLVM-iOS-Sim \
   -DCMAKE_OSX_ARCHITECTURES="x86_64" \
