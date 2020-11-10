@@ -22,7 +22,24 @@ Needs:
  * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to PATH.
  * [Ninja](https://github.com/ninja-build/ninja/releases): Download and extract the ninja executable to `~/Downloads` folder.
 
+To use the non-JIT interpreter, we want [libffi](https://github.com/libffi/libffi). Grab the project with
+```shell
+git clone https://github.com/libffi/libffi.git
+```
+and open the provided Xcode project file `libffi.xcodeproj`. You might need to
+```shell
+brew install autoconf
+```
+Go to **Product > Scheme > libffi-iOS** to target iOS (instead of tvOS by default) and then optionally to **Product > Scheme > Edit Scheme** and set *Build Configuration* to *Release* instead of *Debug*.
+Now choose the targets (iOS simulator, iOS device) and build the project.
+If there is no compilation error, in the main project navigation panel, you should see the **libffi.a** under **Products** folder turns from red (before build) to white (after build).
+Right click on it and choose *Show in Finder*.
+Go to the parent folder and you should see `Release-iphoneos` and `Release-iphonesimulator` that contains the libffi include headers and library.
+Copy those folders to `~/Download/libffi`. The script assumes these.
+
 Once the tools are ready, run the script in the `llvm-project` top folder (or `llvm-project-VERSION` if you download the source zipped package instead of cloning).
+
+Grab a coffee as it will take roughly 30 mins to complete.
 
 Once the build process is completed, the library and include headers should be installed at `~/Download/LLVM-iOS` or `~/Download/LLVM-iOS-Simulator`.
 (We will subsequently refer to these directories as the _LLVM installation dir_.)
