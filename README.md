@@ -39,6 +39,19 @@ Copy those folders to `~/Download/libffi`. The script assumes these.
 
 Once the tools are ready, run the script in the `llvm-project` top folder (or `llvm-project-VERSION` if you download the source zipped package instead of cloning).
 
+When building for real iOS device, you need to open `build_ios/CMakeCache.txt` at this point
+```shell
+cd build_ios
+vim CMakeCache.txt
+```
+and search for and change the value of **HAVE_FFI_CALL** to **1**.
+For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
+After that, build and install with
+```shell
+cmake --build .
+cmake --install .
+```
+
 Grab a coffee as it will take roughly 30 mins to complete.
 
 Once the build process is completed, the library and include headers should be installed at `~/Download/LLVM-iOS` or `~/Download/LLVM-iOS-Simulator`.
@@ -56,6 +69,12 @@ Otherwise, iOS will crash when loading dynamic libraries.
 Running our script [prepare-llvm.sh](prepare-llvm.sh) in the LLVM installation dir will perform the necessary set-up.
 
 Optionally, you could move the `liblld*` to `lib2` as well and the `bin` since it's unlikely you need binary linkage and the `clang` command line program in iOS app.
+
+The archive on our release page was created with
+```shell
+tar -cJf LLVM11-iOS.tar.xz LLVM-iOS/
+tar -cJf LLVM11-iOS-Sim.tar.xz LLVM-iOS-Sim/
+```
 
 Our Sample iOS Project
 ----------------------
