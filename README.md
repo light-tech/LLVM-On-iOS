@@ -1,6 +1,65 @@
 LLVM on iOS
 ===========
 
+The goal of this project is to illustrate how to use LLVM + Clang on iOS.
+We provide a sample iOS app project in the [Sample/](Sample) folder.
+_NO license attached_ so feel free to do whatever you want with it.
+In this app, we use Clang's C interpreter example located in `examples/clang-interpreter/main.cpp` of Clang source code to interpret a simple C++ program.
+(The file was renamed to `Interpreter.cpp` to fit in with iOS development style.)
+The code is pretty much copied verbatim except for some minor modifications, namely:
+
+1. We change the `main` function name to `clangInterpret` since iOS app already has `main` function.
+
+2. We comment out the last line
+```c++
+// llvm::llvm_shutdown();
+```
+so that you can _call `clangInterpret` again_ in the app.
+This line only makes sense in the original program because it was a one-shot command line program.
+
+3. We add a third parameter
+```c++
+llvm::raw_ostream &errorOutputStream
+```
+to `clangInterpret` and replace all `llvm::errs()` with `errorOutputStream` so we can capture the compilation output and pass it back to the app front-end to display to the user.
+
+4. **For real iOS device**: The implementation of [`llvm::sys::getProcessTriple()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/Support/Host.cpp) is currently bogus according to the implementation of [`JITTargetMachineBuilder::detectHost()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/ExecutionEngine/Orc/JITTargetMachineBuilder.cpp): _FIXME: getProcessTriple is bogus. It returns the host LLVM was compiled on, rather than a valid triple for the current process._
+So we need to add the appropriate conditional compilation directive `#if TARGET_OS_SIMULATOR ... #else ... #endif` to give it the correct triple. (The platform macro is documented at `<TargetConditionals.h>`.)
+
+In the latest version, you should be able to edit the program, interpret it and see the output in the app UI.
+
+### Preparations
+
+Before building the project, you need to either
+1. compile LLVM (see instructions down); or
+2. download and extract a prebuilt binary package from our [releases](https://github.com/light-tech/LLVM-On-iOS/releases)
+and copy the LLVM installation folder, say `~/Download/LLVM-iOS-Simulator`, to the root folder of the project like this
+```shell
+# At Sample project folder:
+cp ~/Download/LLVM-iOS-Simulator LLVM
+```
+Here, we copy the `LLVM-iOS-Simulator` to build the app and run it on the simulator.
+
+![Edit the program screenshot](Screenshot1.png)
+![Interpret the program screenshot](Screenshot2.png)
+
+Read on for details on how to create and configure your own project.
+
+### Known Limitations
+
+For simulator, can only build **Debug** version only!
+
+Do NOT expect the app to work on real iPhone due to iOS security preventing [Just-In-Time (JIT) Execution](https://saagarjha.com/blog/2020/02/23/jailed-just-in-time-compilation-on-ios/) that the interpreter example was doing.
+By pulling out the device crash logs, the reason turns out to be the fact the [code generated in-memory by LLVM/Clang wasn't signed](http://iphonedevwiki.net/index.php/Code_Signing) and so the app was terminated with SIGTERM CODESIGN.
+(It does work sometimes if one [launches the app from Xcode](https://9to5mac.com/2020/11/06/ios-14-2-brings-jit-compilation-support-which-enables-emulation-apps-at-full-performance/) though.)
+If there is compilation error, the error message was printed out instead of crashing as expected:
+
+![Add #include non-existing header](Screenshot_Real_iPhone1.png)
+![Compilation error was printed out](Screenshot_Real_iPhone2.png)
+
+To make the app work on real iPhone, compilation into binary, somehow sign it and use [system()](https://stackoverflow.com/questions/32439095/how-to-execute-a-command-line-in-iphone) is a possibility.
+Another possibility would be to use the slower LLVM bytecode interpreter instead of ORC JIT that the example was doing, as many [existing terminal apps](https://opensource.com/article/20/9/run-linux-ios) illustrated.
+
 Build LLVM for iOS (physical device and simulator)
 --------------------------------------------------
 
@@ -75,59 +134,6 @@ The archive on our release page was created with
 tar -cJf LLVM11-iOS.tar.xz LLVM-iOS/
 tar -cJf LLVM11-iOS-Sim.tar.xz LLVM-iOS-Sim/
 ```
-
-Our Sample iOS Project
-----------------------
-
-We provide a sample iOS app project in the [Sample/](Sample) folder; _no license attached_ so feel free to do whatever you want with it.
-In this project, we use Clang's C interpreter example located in `examples/clang-interpreter/main.cpp` of Clang source code to interpret a simple C++ program.
-(The file was renamed to `Interpreter.cpp` to fit in with iOS development style.)
-The code is pretty much copied verbatim except for some minor modifications, namely:
-
-1. We change the `main` function name to `clangInterpret` since iOS app already has `main` function.
-
-2. We comment out the last line
-```c++
-// llvm::llvm_shutdown();
-```
-so that you can _call `clangInterpret` again_ in the app.
-This line only makes sense in the original program because it was a one-shot command line program.
-
-3. We add a third parameter
-```c++
-llvm::raw_ostream &errorOutputStream
-```
-to `clangInterpret` and replace all `llvm::errs()` with `errorOutputStream` so we can capture the compilation output and pass it back to the app front-end to display to the user.
-
-4. **For real iOS device**: The implementation of [`llvm::sys::getProcessTriple()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/Support/Host.cpp) is currently bogus according to the implementation of [`JITTargetMachineBuilder::detectHost()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/ExecutionEngine/Orc/JITTargetMachineBuilder.cpp): _FIXME: getProcessTriple is bogus. It returns the host LLVM was compiled on, rather than a valid triple for the current process._
-So we need to add the appropriate conditional compilation directive `#if TARGET_OS_SIMULATOR ... #else ... #endif` to give it the correct triple. (The platform macro is documented at `<TargetConditionals.h>`.)
-
-In the latest version, you should be able to edit the program, interpret it and see the output in the app UI.
-
-Before building the project, you need to copy the LLVM installation folder, say `~/Download/LLVM-iOS-Simulator`, to the root folder of the project like this
-```shell
-# At Sample project folder:
-cp ~/Download/LLVM-iOS-Simulator LLVM
-```
-Here, we copy the `LLVM-iOS-Simulator` to build the app and run it on the simulator.
-
-![Edit the program screenshot](Screenshot1.png)
-![Interpret the program screenshot](Screenshot2.png)
-
-Read on for details on how to create and configure your own project.
-
-### Known Limitation
-For simulator, can only build **Debug** version only!
-Do NOT expect the app to work on real iPhone due to iOS security preventing [Just-In-Time (JIT) Execution](https://saagarjha.com/blog/2020/02/23/jailed-just-in-time-compilation-on-ios/) that the interpreter example was doing.
-By pulling out the device crash logs, the reason turns out to be the fact the [code generated in-memory by LLVM/Clang wasn't signed](http://iphonedevwiki.net/index.php/Code_Signing) and so the app was terminated with SIGTERM CODESIGN.
-(It does work sometimes if one [launches the app from Xcode](https://9to5mac.com/2020/11/06/ios-14-2-brings-jit-compilation-support-which-enables-emulation-apps-at-full-performance/) though.)
-If there is compilation error, the error message was printed out instead of crashing as expected:
-
-![Add #include non-existing header](Screenshot_Real_iPhone1.png)
-![Compilation error was printed out](Screenshot_Real_iPhone2.png)
-
-To make the app work on real iPhone, compilation into binary, somehow sign it and use [system()](https://stackoverflow.com/questions/32439095/how-to-execute-a-command-line-in-iphone) is a possibility.
-Another possibility would be to use the slower LLVM bytecode interpreter instead of ORC JIT that the example was doing, as many [existing terminal apps](https://opensource.com/article/20/9/run-linux-ios) illustrated.
 
 Behind the Scene: Configure iOS App Xcode Project
 -------------------------------------------------
