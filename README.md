@@ -141,14 +141,41 @@ tar -cJf LLVM11-iOS.tar.xz LLVM-iOS/
 tar -cJf LLVM11-iOS-Sim.tar.xz LLVM-iOS-Sim/
 ```
 
-Behind the Scene: Configure iOS App Xcode Project
--------------------------------------------------
+Behind the Scene
+----------------
 
 These days, you probably want to write your app in _Swift_ whereas LLVM library is written in _C++_ so we need to create a _bridge_ to expose LLVM backend to your app Swift frontend. This could be accomplished via Objective-C as an intermediate language:
 ```
 Swift <-> Objective-C <-> C++
 ```
-Go to [Further Readings](#further-readings) for more details on Swift-C++ interoperability.
+So to understand how our Sample project works, you need to know
+1. how language interoperability works; and
+2. how to configure your Xcode project to use it.
+
+### Swift-C++ interoperability
+
+To start, you might want to start with _Anthony Nguyen_'s 
+[Using C++ in Objective-C iOS app: My first walk](https://medium.com/@nguyenminhphuc/using-c-in-objective-c-ios-app-my-first-walk-77319d94a940)
+for a quick intro on how to make use of C++ in Objective-C.
+(Note that both C++ and Objective-C are extensions of C and reduces to C.)
+An easy read on Objective-C and Swift interoperability could be found in
+[Understanding Objective-C and Swift interoperability](https://rderik.com/blog/understanding-objective-c-and-swift-interoperability/#expose-swift-code-to-objective-c)
+by _RDerik_.
+Combining these two articles is the basis for our Sample app.
+
+A typical approach to allow C++ in Swift-based iOS app will be using
+ * _Swift_       : Anything iOS-related (UI, file system access, Internet, ...)
+ * _Objective-C_ : Simple classes (like [`LLVMBridge`](Sample/Sample/LLVMBridge.h) in our Sample app) to expose service written in C++.
+                   The main role is to convert data types between C++ and Swift.
+                   For example: Swift's `Data` to Objective-C's `NSData` to C++'s buffer `char*` (and length).
+ * _C++_         : Actual implementation of processing functionality.
+
+**Tip**: When writing bridging classes, you should use `NSData` for arguments instead of `NSString` and leave the `String <-> Data` conversion to Swift since you will want a `char*` in C++ anyway.
+
+_Apple_'s [Programming with Objective-C](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html#//apple_ref/doc/uid/TP40011210)
+is fairly useful in helping us write the Objective-C bridging class `LLVMBridge`: Once we pass to C++, we are in our home turf.
+
+### Configure iOS App Xcode Project
 
 1. Create a new iOS app project in Xcode and copy an LLVM installation to the project folder.
 Unfortunately, LLVM cannot build fat binary for iOS at the moment so we have to manually switch between the two LLVM installations when we switch testing between real iOS device (ARM) or iOS simulator (x86_64).
@@ -180,27 +207,3 @@ At this point, we should be able to run the project on iOS simulator.
 ![Bitcode Setting](DisableBitcode.png)
 
 Now you are ready to make use of LLVM glory.
-
-Further Readings
-----------------
-
-To start, you might want to start with _Anthony Nguyen_'s 
-[Using C++ in Objective-C iOS app: My first walk](https://medium.com/@nguyenminhphuc/using-c-in-objective-c-ios-app-my-first-walk-77319d94a940)
-for a quick intro on how to make use of C++ in Objective-C.
-(Note that both C++ and Objective-C are extensions of C and reduces to C.)
-An easy read on Objective-C and Swift interoperability could be found in
-[Understanding Objective-C and Swift interoperability](https://rderik.com/blog/understanding-objective-c-and-swift-interoperability/#expose-swift-code-to-objective-c)
-by _RDerik_.
-Combining these two articles is the basis for our Sample app.
-
-A typical approach to allow C++ in Swift-based iOS app will be using
- * _Swift_       : Anything iOS-related (UI, file system access, Internet, ...)
- * _Objective-C_ : Simple classes (like `LLVMBridge` in our Sample app) to expose service written in C++.
-                   The main role is to convert data types between C++ and Swift.
-                   For example: Swift's `Data` to Objective-C's `NSData` to C++'s buffer `char*` (and length).
- * _C++_         : Actual implementation of processing functionality.
-
-**Tip**: When writing bridging classes, you should use `NSData` for arguments instead of `NSString` and leave the `String <-> Data` conversion to Swift since you will want a `char*` in C++ anyway.
-
-_Apple_'s [Programming with Objective-C](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html#//apple_ref/doc/uid/TP40011210)
-is fairly useful in helping us write the Objective-C bridging class `LLVMBridge`: Once we pass to C++, we are in our home turf.
