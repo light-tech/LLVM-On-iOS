@@ -2,9 +2,9 @@ LLVM on iOS
 ===========
 
 The goal of this project is to illustrate how to use LLVM + Clang on iOS.
-We provide a sample iOS app project in the [Sample/](Sample) folder.
-_NO license attached_ so feel free to do whatever you want with it.
-In this app, we use Clang's C interpreter example located in `examples/clang-interpreter/main.cpp` of Clang source code to interpret a simple C++ program.
+
+For the eager reader, we provide a sample iOS app project in the [Sample/](Sample) folder which has **NO license attached** so feel free to do whatever you want with it.
+In this app, we use Clang's C interpreter example located in `examples/clang-interpreter/main.cpp` of Clang source code to _interpret a simple C++ program_ and _print out the output on the iOS app's user interface_.
 (The file was renamed to `Interpreter.cpp` to fit in with iOS development style.)
 The code is pretty much copied verbatim except for some minor modifications, namely:
 
@@ -23,7 +23,7 @@ llvm::raw_ostream &errorOutputStream
 ```
 to `clangInterpret` and replace all `llvm::errs()` with `errorOutputStream` so we can capture the compilation output and pass it back to the app front-end to display to the user.
 
-4. **For real iOS device**: The implementation of [`llvm::sys::getProcessTriple()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/Support/Host.cpp) is currently bogus according to the implementation of [`JITTargetMachineBuilder::detectHost()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/ExecutionEngine/Orc/JITTargetMachineBuilder.cpp): _FIXME: getProcessTriple is bogus. It returns the host LLVM was compiled on, rather than a valid triple for the current process._
+4. **For real iOS device**: The implementation of [`llvm::sys::getProcessTriple()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/Support/Host.cpp) is currently bogus according to the implementation of [`JITTargetMachineBuilder::detectHost()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/ExecutionEngine/Orc/JITTargetMachineBuilder.cpp).
 So we need to add the appropriate conditional compilation directive `#if TARGET_OS_SIMULATOR ... #else ... #endif` to give it the correct triple. (The platform macro is documented at `<TargetConditionals.h>`.)
 
 In the latest version, you should be able to edit the program, interpret it and see the output in the app UI.
@@ -38,12 +38,11 @@ and copy the LLVM installation folder, say `~/Download/LLVM-iOS-Simulator`, to t
 # At Sample project folder:
 cp ~/Download/LLVM-iOS-Simulator LLVM
 ```
-Here, we copy the `LLVM-iOS-Simulator` to build the app and run it on the simulator.
+
+Here, let us download `LLVM11-iOS-Sim.tar.xz`, extract it and copy the `LLVM-iOS-Simulator` to build the app and run it on the simulator:
 
 ![Edit the program screenshot](Screenshot1.png)
 ![Interpret the program screenshot](Screenshot2.png)
-
-Read on for details on how to create and configure your own project.
 
 ### Known Limitations
 
@@ -51,54 +50,59 @@ For simulator, can only build **Debug** version only!
 
 Do NOT expect the app to work on real iPhone due to iOS security preventing [Just-In-Time (JIT) Execution](https://saagarjha.com/blog/2020/02/23/jailed-just-in-time-compilation-on-ios/) that the interpreter example was doing.
 By pulling out the device crash logs, the reason turns out to be the fact the [code generated in-memory by LLVM/Clang wasn't signed](http://iphonedevwiki.net/index.php/Code_Signing) and so the app was terminated with SIGTERM CODESIGN.
-(It does work sometimes if one [launches the app from Xcode](https://9to5mac.com/2020/11/06/ios-14-2-brings-jit-compilation-support-which-enables-emulation-apps-at-full-performance/) though.)
+
 If there is compilation error, the error message was printed out instead of crashing as expected:
 
 ![Add #include non-existing header](Screenshot_Real_iPhone1.png)
 ![Compilation error was printed out](Screenshot_Real_iPhone2.png)
 
-To make the app work on real iPhone, compilation into binary, somehow sign it and use [system()](https://stackoverflow.com/questions/32439095/how-to-execute-a-command-line-in-iphone) is a possibility.
+**Note**: It does work if one [launches the app from Xcode](https://9to5mac.com/2020/11/06/ios-14-2-brings-jit-compilation-support-which-enables-emulation-apps-at-full-performance/) though.
+
+To make the app work on real iPhone _untethered from Xcode_, one possibility is to use compilation into binary, somehow sign it and use [system()](https://stackoverflow.com/questions/32439095/how-to-execute-a-command-line-in-iphone).
 Another possibility would be to use the slower LLVM bytecode interpreter instead of ORC JIT that the example was doing, as many [existing terminal apps](https://opensource.com/article/20/9/run-linux-ios) illustrated.
 
 Build LLVM for iOS (physical device and simulator)
 --------------------------------------------------
 
-From [the official instructions](https://llvm.org/docs/GettingStarted.html):
+### The tools we needs
 
-```shell
-# Alternative to git clone is to download and extract the monorepo source code from https://releases.llvm.org/download.html
-git clone https://github.com/llvm/llvm-project.git
-cd llvm-project
-mkdir build
-cd build
-cmake -G <generator> [options] ../llvm
-```
-
-Our script [buildllvm-iOS.sh](buildllvm-iOS.sh) and [buildllvm-iOS-Simulator.sh](buildllvm-iOS-Simulator.sh) build LLVM, Clang, LLD and LibC++ for iOS and iOS simulator respectively.
-We disable various stuffs such as `terminfo` since there is no terminal in iOS; otherwise, there will be problem when linking in Xcode.
-Needs:
  * [Xcode](https://developer.apple.com/xcode/): Download from app store.
  * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to PATH.
  * [Ninja](https://github.com/ninja-build/ninja/releases): Download and extract the ninja executable to `~/Downloads` folder.
-
-To use the non-JIT interpreter, we want [libffi](https://github.com/libffi/libffi). Grab the project with
-```shell
-git clone https://github.com/libffi/libffi.git
-```
-and open the provided Xcode project file `libffi.xcodeproj`. You might need to
+ * Optionally, `autoconf` is needed to build libffi, install it with homebrew from the terminal
 ```shell
 brew install autoconf
 ```
+
+### Build libffi
+
+To use the non-JIT interpreter, we want to build LLVM with [libffi](https://github.com/libffi/libffi). Grab the project with
+```shell
+git clone https://github.com/libffi/libffi.git
+```
+and open the provided Xcode project file `libffi.xcodeproj`.
+
 Go to **Product > Scheme > libffi-iOS** to target iOS (instead of tvOS by default) and then optionally to **Product > Scheme > Edit Scheme** and set *Build Configuration* to *Release* instead of *Debug*.
+
 Now choose the targets (iOS simulator, iOS device) and build the project.
+
 If there is no compilation error, in the main project navigation panel, you should see the **libffi.a** under **Products** folder turns from red (before build) to white (after build).
 Right click on it and choose *Show in Finder*.
+
 Go to the parent folder and you should see `Release-iphoneos` and `Release-iphonesimulator` that contains the libffi include headers and library.
-Copy those folders to `~/Download/libffi`. The script assumes these.
+Copy those folders to `~/Download/libffi`.
 
-Once the tools are ready, run the script in the `llvm-project` top folder (or `llvm-project-VERSION` if you download the source zipped package instead of cloning).
+Our LLVM built script assumes these.
 
-When building for real iOS device, you need to open `build_ios/CMakeCache.txt` at this point
+### Build LLVM and co.
+
+Our script [buildllvm-iOS.sh](buildllvm-iOS.sh) and [buildllvm-iOS-Simulator.sh](buildllvm-iOS-Simulator.sh) build LLVM, Clang, LLD and LibC++ for iOS and iOS simulator respectively.
+We disable various stuffs such as `terminfo` since there is no terminal in iOS; otherwise, there will be problem when linking in Xcode.
+Feel free to adjust to suit your need according to [the official instructions](https://llvm.org/docs/GettingStarted.html).
+
+Run the script in the `llvm-project` top folder (or `llvm-project-VERSION` if you download the source zipped package instead of cloning).
+
+**Note**: When building for real iOS device, you need to open `build_ios/CMakeCache.txt` at this point
 ```shell
 cd build_ios
 vim CMakeCache.txt
@@ -116,6 +120,8 @@ Grab a coffee as it will take roughly 30 mins to complete.
 Once the build process is completed, the library and include headers should be installed at `~/Download/LLVM-iOS` or `~/Download/LLVM-iOS-Simulator`.
 (We will subsequently refer to these directories as the _LLVM installation dir_.)
 
+### Post compilation and installation
+
 Before being able to use in Xcode, in the built folder, we first need to move the `lib/clang/` and `lib/cmake` and `lib/*.dylib` out of `lib/`:
 ```shell
 cd ~/Download/LLVM-iOS
@@ -129,7 +135,7 @@ Running our script [prepare-llvm.sh](prepare-llvm.sh) in the LLVM installation d
 
 Optionally, you could move the `liblld*` to `lib2` as well and the `bin` since it's unlikely you need binary linkage and the `clang` command line program in iOS app.
 
-The archive on our release page was created with
+The ready-to-use archive on our release page was created with
 ```shell
 tar -cJf LLVM11-iOS.tar.xz LLVM-iOS/
 tar -cJf LLVM11-iOS-Sim.tar.xz LLVM-iOS-Sim/
