@@ -103,19 +103,9 @@ Feel free to adjust to suit your need according to [the official instructions](h
 Run the script in the `llvm-project` top folder (or `llvm-project-VERSION` if you download the source zipped package instead of cloning).
 
 (Fixed in LLVM 11.0.1 and libffi as of commit 5c63b463b87d3c06102a4a7f05f395929d9ea79b)
-<del>**Note**: When building for real iOS device, you need to open `build_ios/CMakeCache.txt` at this point
-```shell
-cd build_ios
-vim CMakeCache.txt
-```
-and search for and change the value of **HAVE_FFI_CALL** to **1**.
+<del>**Note**: When building for real iOS device, you need to open `build_ios/CMakeCache.txt` at this point, search for and change the value of **HAVE_FFI_CALL** to **1**.
 For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
-After that, build and install with
-```shell
-cmake --build .
-cmake --install .
-```
-</del>
+After that, build and install with `cmake --build .` and then `cmake --install .`</del>
 
 Grab a coffee as it will take roughly 30 mins to complete.
 
