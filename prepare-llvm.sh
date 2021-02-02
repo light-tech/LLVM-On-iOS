@@ -10,7 +10,6 @@ rm -rf bin libexec share
 
 # Move unused stuffs in lib to a temporary lib2 (restored when necessary)
 mkdir lib2
-mv lib/clang lib2/
 mv lib/cmake lib2/
 mv lib/*.dylib lib2/
 mv lib/libc++* lib2/

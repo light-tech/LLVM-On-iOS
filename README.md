@@ -118,9 +118,9 @@ Before being able to use in Xcode, in the built folder, we first need to move th
 ```shell
 cd ~/Download/LLVM-iOS
 mkdir lib2
-mv lib/clang lib2/
 mv lib/cmake lib2/
 mv lib/*.dylib lib2/
+mv lib/libc++* lib2/
 ```
 Otherwise, iOS will crash when loading dynamic libraries.
 Running our script [prepare-llvm.sh](prepare-llvm.sh) in the LLVM installation dir will perform the necessary set-up.
