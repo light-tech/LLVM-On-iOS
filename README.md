@@ -96,16 +96,15 @@ Our LLVM built script assumes these.
 
 ### Build LLVM and co.
 
-Our script [buildllvm-iOS.sh](buildllvm-iOS.sh) and [buildllvm-iOS-Simulator.sh](buildllvm-iOS-Simulator.sh) build LLVM, Clang, LLD and LibC++ for iOS and iOS simulator respectively.
+Our script [buildllvm-macOS.sh](buildllvm-macOS.sh), [buildllvm-iOS.sh](buildllvm-iOS.sh) and [buildllvm-iOS-Simulator.sh](buildllvm-iOS-Simulator.sh) build LLVM, Clang, LLD and LibC++ for macOS, iOS and iOS simulator respectively.
 We disable various stuffs such as `terminfo` since there is no terminal in iOS; otherwise, there will be problem when linking in Xcode.
 Feel free to adjust to suit your need according to [the official instructions](https://llvm.org/docs/GettingStarted.html).
 
 Run the script in the `llvm-project` top folder (or `llvm-project-VERSION` if you download the source zipped package instead of cloning).
 
-(Fixed in LLVM 11.0.1 and libffi as of commit 5c63b463b87d3c06102a4a7f05f395929d9ea79b)
-<del>**Note**: When building for real iOS device, you need to open `build_ios/CMakeCache.txt` at this point, search for and change the value of **HAVE_FFI_CALL** to **1**.
+**Note**: When building for real iOS device, you need to open `build_ios/CMakeCache.txt` at this point, search for and change the value of **HAVE_FFI_CALL** to **1**.
 For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
-After that, build and install with `cmake --build .` and then `cmake --install .`</del>
+After that, build and install with `cmake --build .` and then `cmake --install .`
 
 Grab a coffee as it will take roughly 30 mins to complete.
 
@@ -114,7 +113,7 @@ Once the build process is completed, the library and include headers should be i
 
 ### Post compilation and installation
 
-Before being able to use in Xcode, in the built folder, we first need to move the `lib/clang/` and `lib/cmake` and `lib/*.dylib` out of `lib/`:
+Before being able to use in Xcode, in the built folder, we first need to move the `lib/cmake` and `lib/*.dylib` out of `lib/`:
 ```shell
 cd ~/Download/LLVM-iOS
 mkdir lib2
@@ -129,6 +128,7 @@ Optionally, you could move the `liblld*` to `lib2` as well and the `bin` since i
 
 The ready-to-use archive on our release page was created with
 ```shell
+tar -cJf LLVM-11.0.1-macOS.tar.xz LLVM-macOS/
 tar -cJf LLVM-11.0.1-iOS.tar.xz LLVM-iOS/
 tar -cJf LLVM-11.0.1-iOS-Sim.tar.xz LLVM-iOS-Sim/
 ```
