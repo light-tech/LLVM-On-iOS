@@ -24,9 +24,9 @@ cd build_ios
 # Note: We have to use include/ffi subdir for libffi as the main header ffi.h
 # includes <ffi_arm64.h> and not <ffi/ffi_arm64.h>. So if we only use
 # $DOWNLOADS/libffi/Release-iphoneos/include for FFI_INCLUDE_DIR
-# the platform-specific header would not be found!
+# the platform-specific header would not be found! ;lld;libcxx;libcxxabi
 cmake -G "Ninja" \
-  -DLLVM_ENABLE_PROJECTS="clang;lld;libcxx;libcxxabi" \
+  -DLLVM_ENABLE_PROJECTS="clang" \
   -DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
   -DLLVM_BUILD_TOOLS=OFF \
   -DBUILD_SHARED_LIBS=OFF \
@@ -53,7 +53,7 @@ cmake -G "Ninja" \
 sed -i.bak 's/^HAVE_FFI_CALL:INTERNAL=/HAVE_FFI_CALL:INTERNAL=1/g' CMakeCache.txt
 
 # Build
-# cmake --build .
+cmake --build .
 
 # Install libs
-# cmake --install .
+cmake --install .

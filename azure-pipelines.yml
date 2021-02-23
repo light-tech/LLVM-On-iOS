@@ -22,9 +22,9 @@ steps:
 - publish: $(System.DefaultWorkingDirectory)/llvm-project/build_ios/CMakeCache.txt
   artifact: CMakeOutputs
   displayName: 'Publish CMake output for inspection'
-  enabled: true
+  enabled: false
 
 - publish: $(System.DefaultWorkingDirectory)/LLVM-iOS
   artifact: LLVM
   displayName: 'Publish LLVM Libs'
-  enabled: false
+  enabled: true
