@@ -48,7 +48,7 @@ cmake -G "Ninja" \
   ../llvm
 
 # Build
-cmake --build .
+# cmake --build .
 
 # Install libs
-cmake --install .
+# cmake --install .

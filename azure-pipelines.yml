@@ -10,8 +10,7 @@ pool:
   vmImage: macOS-10.15
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+
 - script: |
     wget https://github.com/light-tech/LLVM-On-iOS/releases/download/libffi_v3.3plus/libffi.tar.xz
     tar xzf libffi.tar.xz
@@ -19,7 +18,13 @@ steps:
     git clone  --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
     ./buildllvm-iOS.sh
   displayName: 'Checkout and build llvm project'
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+
+- publish: $(System.DefaultWorkingDirectory)/llvm-project/build_ios
+  artifact: CMakeOutputs
+  displayName: 'Publish CMake output for inspection'
+  enabled: true
+
+- publish: $(System.DefaultWorkingDirectory)/LLVM-iOS
+  artifact: LLVM
+  displayName: 'Publish LLVM Libs'
+  enabled: false
