@@ -6,25 +6,35 @@
 trigger:
 - master
 
-pool:
-  vmImage: macOS-10.15
+jobs:
+- job: BuildLLVMJob
+  timeoutInMinutes: 0
+  pool:
+    vmImage: macOS-10.15
 
-steps:
+  steps:
 
-- script: |
-    wget https://github.com/light-tech/LLVM-On-iOS/releases/download/libffi_v3.3plus/libffi.tar.xz
-    tar xzf libffi.tar.xz
-    test -d libffi && echo "libffi was successfully extracted"
-    git clone  --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
-    ./buildllvm-iOS.sh
-  displayName: 'Checkout and build llvm project'
+  - script: |
+      wget https://github.com/light-tech/LLVM-On-iOS/releases/download/libffi_v3.3plus/libffi.tar.xz
+      tar xzf libffi.tar.xz
+      test -d libffi && echo "libffi was successfully extracted"
+      git clone  --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
+      ./buildllvm-iOS.sh
+    displayName: 'Checkout and build llvm project'
 
-- publish: $(System.DefaultWorkingDirectory)/llvm-project/build_ios/CMakeCache.txt
-  artifact: CMakeOutputs
-  displayName: 'Publish CMake output for inspection'
-  enabled: false
+  - script: |
+      cd LLVM-iOS
+      ../prepare-llvm.sh
+      cd ..
+      tar -cJf LLVM-iOS.tar.xz LLVM-iOS/
+    displayName: 'Packaging LLVM build'
 
-- publish: $(System.DefaultWorkingDirectory)/LLVM-iOS
-  artifact: LLVM
-  displayName: 'Publish LLVM Libs'
-  enabled: true
+  - publish: $(System.DefaultWorkingDirectory)/llvm-project/build_ios/CMakeCache.txt
+    artifact: CMakeOutputs
+    displayName: 'Publish CMake output for inspection'
+    enabled: false
+
+  - publish: $(System.DefaultWorkingDirectory)/LLVM-iOS.tar.xz
+    artifact: LLVM
+    displayName: 'Publish LLVM Libs'
+    enabled: true
