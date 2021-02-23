@@ -1,7 +1,13 @@
 # Script to build LLVM for iOS Simulator
 # Execute in top `llvm-project` folder
 
-DOWNLOADS=~/Downloads
+REPO_DIR=`pwd`
+LIBFFI_DIR=$REPO_DIR/libffi/Release-maccatalyst
+LLVM_DIR=$REPO_DIR/llvm-project
+LLVM_INSTALL_DIR=$REPO_DIR/LLVM-iOS-Sim
+
+wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
+unzip ninja-mac.zip
 
 # Use xcodebuild -showsdks to find out the available SDK name
 SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
@@ -25,14 +31,14 @@ cmake -G "Ninja" \
   -DLLVM_ENABLE_RTTI=OFF \
   -DLLVM_ENABLE_TERMINFO=OFF \
   -DLLVM_ENABLE_FFI=ON \
-  -DFFI_INCLUDE_DIR=$DOWNLOADS/libffi/Release-iphonesimulator/include/ffi \
-  -DFFI_LIBRARY_DIR=$DOWNLOADS/libffi/Release-iphonesimulator/ \
+  -DFFI_INCLUDE_DIR=$LIBFFI_DIR/include/ffi \
+  -DFFI_LIBRARY_DIR=$LIBFFI_DIR \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=$DOWNLOADS/LLVM-iOS-Sim \
+  -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_DIR \
   -DCMAKE_OSX_ARCHITECTURES="x86_64" \
   -DCMAKE_OSX_SYSROOT=$SYSROOT \
   -DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake \
-  -DCMAKE_MAKE_PROGRAM=$DOWNLOADS/ninja \
+  -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja \
   ../llvm
 
 # Build

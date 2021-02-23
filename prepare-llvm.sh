@@ -13,15 +13,10 @@ mkdir lib2
 mv lib/cmake lib2/
 mv lib/*.dylib lib2/
 mv lib/libc++* lib2/
+rm -rf lib2 # Comment this if you want to keep
 
 # Copy libffi
 
-DOWNLOADS=~/Downloads
-if [ $folder = "LLVM-iOS" ]; then
-    LIBFFI_BUILD_DIR=$DOWNLOADS/libffi/Release-iphoneos
-else
-    LIBFFI_BUILD_DIR=$DOWNLOADS/libffi/Release-iphonesimulator
-fi
-
+LIBFFI_BUILD_DIR=`pwd`/../libffi/Release-maccatalyst
 cp -r $LIBFFI_BUILD_DIR/include/ffi ./include/
 cp $LIBFFI_BUILD_DIR/libffi.a ./lib/

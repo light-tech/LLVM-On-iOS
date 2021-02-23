@@ -69,42 +69,29 @@ Build LLVM for iOS (physical device and simulator)
  * [Xcode](https://developer.apple.com/xcode/): Download from app store.
  * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to PATH.
  * [Ninja](https://github.com/ninja-build/ninja/releases): Download and extract the ninja executable to `~/Downloads` folder.
- * Optionally, `autoconf` is needed to build libffi, install it with homebrew from the terminal
+ * The GNU tools `autoconf`, `automake` and `libtool` are needed to build libffi, install them with homebrew from the terminal
 ```shell
-brew install autoconf
+brew install autoconf automake libtool
 ```
+or [build them from the source](https://gist.github.com/GraemeConradie/49d2f5962fa72952bc6c64ac093db2d5).
 
 ### Build libffi
 
-To use the non-JIT interpreter, we want to build LLVM with [libffi](https://github.com/libffi/libffi). Grab the project with
-```shell
-git clone https://github.com/libffi/libffi.git
-```
-and open the provided Xcode project file `libffi.xcodeproj`.
+To use the non-JIT interpreter, we want to build LLVM with [libffi](https://github.com/libffi/libffi).
 
-Go to **Product > Scheme > libffi-iOS** to target iOS (instead of tvOS by default) and then optionally to **Product > Scheme > Edit Scheme** and set *Build Configuration* to *Release* instead of *Debug*.
-
-Now choose the targets (iOS simulator, iOS device) and build the project.
-
-If there is no compilation error, in the main project navigation panel, you should see the **libffi.a** under **Products** folder turns from red (before build) to white (after build).
-Right click on it and choose *Show in Finder*.
-
-Go to the parent folder and you should see `Release-iphoneos` and `Release-iphonesimulator` that contains the libffi include headers and library.
-Copy those folders to `~/Download/libffi`.
-
-Our LLVM built script assumes these.
+Simply execute [buildlibffi.sh](buildlibffi.sh) in the repo root.
 
 ### Build LLVM and co.
 
-Our script [buildllvm-macOS.sh](buildllvm-macOS.sh), [buildllvm-iOS.sh](buildllvm-iOS.sh) and [buildllvm-iOS-Simulator.sh](buildllvm-iOS-Simulator.sh) build LLVM, Clang, LLD and LibC++ for macOS, iOS and iOS simulator respectively.
+Our scripts [buildllvm-iOS.sh](buildllvm-iOS.sh) and [buildllvm-iOS-Simulator.sh](buildllvm-iOS-Simulator.sh) build LLVM + Clang for iOS and iOS simulator respectively.
 We disable various stuffs such as `terminfo` since there is no terminal in iOS; otherwise, there will be problem when linking in Xcode.
 Feel free to adjust to suit your need according to [the official instructions](https://llvm.org/docs/GettingStarted.html).
 
-Run the script in the `llvm-project` top folder (or `llvm-project-VERSION` if you download the source zipped package instead of cloning).
-
-**Note**: When building for real iOS device, you need to open `build_ios/CMakeCache.txt` at this point, search for and change the value of **HAVE_FFI_CALL** to **1**.
-For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
-After that, build and install with `cmake --build .` and then `cmake --install .`
+At this repo root:
+```shell
+git clone  --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
+./buildllvm-iOS.sh
+```
 
 Grab a coffee as it will take roughly 30 mins to complete.
 
@@ -115,11 +102,12 @@ Once the build process is completed, the library and include headers should be i
 
 Before being able to use in Xcode, in the built folder, we first need to move the `lib/cmake` and `lib/*.dylib` out of `lib/`:
 ```shell
-cd ~/Download/LLVM-iOS
+cd LLVM-iOS
 mkdir lib2
 mv lib/cmake lib2/
 mv lib/*.dylib lib2/
 mv lib/libc++* lib2/
+#rm -rf lib2
 ```
 Otherwise, iOS will crash when loading dynamic libraries.
 Running our script [prepare-llvm.sh](prepare-llvm.sh) in the LLVM installation dir will perform the necessary set-up.
@@ -128,9 +116,7 @@ Optionally, you could move the `liblld*` to `lib2` as well and the `bin` since i
 
 The ready-to-use archive on our release page was created with
 ```shell
-tar -cJf LLVM-11.0.1-macOS.tar.xz LLVM-macOS/
 tar -cJf LLVM-11.0.1-iOS.tar.xz LLVM-iOS/
-tar -cJf LLVM-11.0.1-iOS-Sim.tar.xz LLVM-iOS-Sim/
 ```
 
 Behind the Scene
