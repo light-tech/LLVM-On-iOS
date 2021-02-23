@@ -19,7 +19,7 @@ steps:
     ./buildllvm-iOS.sh
   displayName: 'Checkout and build llvm project'
 
-- publish: $(System.DefaultWorkingDirectory)/llvm-project/build_ios
+- publish: $(System.DefaultWorkingDirectory)/llvm-project/build_ios/CMakeCache.txt
   artifact: CMakeOutputs
   displayName: 'Publish CMake output for inspection'
   enabled: true

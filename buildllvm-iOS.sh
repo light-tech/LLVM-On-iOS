@@ -47,6 +47,11 @@ cmake -G "Ninja" \
   -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja \
   ../llvm
 
+# When building for real iOS device, we need to open `build_ios/CMakeCache.txt` at this point, search for and change the value of **HAVE_FFI_CALL** to **1**.
+# For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
+# Without this, the execution engine is not built with libffi at all.
+sed -i.bak 's/^HAVE_FFI_CALL:INTERNAL=/HAVE_FFI_CALL:INTERNAL=1/g' CMakeCache.txt
+
 # Build
 # cmake --build .
 
