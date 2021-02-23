@@ -14,3 +14,6 @@ cd libffi
 for r in {1..2}; do
     xcodebuild -scheme libffi-iOS -configuration Release SYMROOT="$LIBFFI_DIR"
 done
+
+# Archive the output
+tar -cJf libffi.tar.xz libffi/Release-maccatalyst

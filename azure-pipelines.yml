@@ -13,15 +13,12 @@ steps:
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
 - script: |
-    LIBFFI=`pwd`
-    git clone https://github.com/libffi/libffi.git
-    cd libffi
-    xcodebuild -list
-    xcodebuild -scheme libffi-iOS SYMROOT="$LIBFFI"
-    #git clone https://github.com/llvm/llvm-project.git
-    #cd llvm-project
-    #../buildllvm-iOS.sh
-  displayName: 'Checkout and build libffi'
+    wget https://github.com/light-tech/LLVM-On-iOS/releases/download/libffi_v3.3plus/libffi.tar.xz
+    tar xzf libffi.tar.xz
+    test -d libffi && echo "libffi was successfully extracted"
+    git clone  --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
+    ./buildllvm-iOS.sh
+  displayName: 'Checkout and build llvm project'
 - script: |
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml

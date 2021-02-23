@@ -1,7 +1,19 @@
 # Script to build LLVM for iOS Device
-# Execute in top `llvm-project` folder
+# Assumptions:
+#  * Run at this repo root
+#  * LLVM is checked out inside this repo
+#  * libffi is either built or downloaded in relative location libffi/Release-maccatalyst
 
-DOWNLOADS=~/Downloads
+REPO_DIR=`pwd`
+LIBFFI_DIR=$REPO_DIR/libffi/Release-maccatalyst
+LLVM_DIR=$REPO_DIR/llvm-project
+LLVM_INSTALL_DIR=$REPO_DIR/LLVM-iOS
+
+# Download and extract ninja
+wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
+unzip ninja-mac.zip
+
+cd llvm-project
 
 rm -rf build_ios
 mkdir build_ios
@@ -25,18 +37,18 @@ cmake -G "Ninja" \
   -DLLVM_ENABLE_RTTI=OFF \
   -DLLVM_ENABLE_TERMINFO=OFF \
   -DLLVM_ENABLE_FFI=ON \
-  -DFFI_INCLUDE_DIR=$DOWNLOADS/libffi/Release-iphoneos/include/ffi \
-  -DFFI_LIBRARY_DIR=$DOWNLOADS/libffi/Release-iphoneos \
+  -DFFI_INCLUDE_DIR=$LIBFFI_DIR/include/ffi \
+  -DFFI_LIBRARY_DIR=$LIBFFI_DIR \
   -DLLVM_TARGET_ARCH="arm64" \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=$DOWNLOADS/LLVM-iOS \
+  -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_DIR \
   -DCMAKE_OSX_ARCHITECTURES="arm64" \
   -DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake \
-  -DCMAKE_MAKE_PROGRAM=$DOWNLOADS/ninja \
+  -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja \
   ../llvm
 
 # Build
-# cmake --build .
+cmake --build .
 
 # Install libs
-# cmake --install .
+cmake --install .
