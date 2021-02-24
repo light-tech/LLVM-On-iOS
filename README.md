@@ -79,23 +79,24 @@ or [build them from the source](https://gist.github.com/GraemeConradie/49d2f5962
 
 To use the non-JIT interpreter, we want to build LLVM with [libffi](https://github.com/libffi/libffi).
 
-Simply execute [buildlibffi.sh](buildlibffi.sh) in the repo root.
+Simply execute [build-libffi.sh](build-libffi.sh) in the repo root.
 
 ### Build LLVM and co.
 
-Our scripts [buildllvm-iOS.sh](buildllvm-iOS.sh) and [buildllvm-iOS-Simulator.sh](buildllvm-iOS-Simulator.sh) build LLVM + Clang for iOS and iOS simulator respectively.
+Our script [build-llvm.sh](buildllvm-iOS.sh) builds LLVM + Clang for iOS and iOS simulator respectively.
 We disable various stuffs such as `terminfo` since there is no terminal in iOS; otherwise, there will be problem when linking in Xcode.
 Feel free to adjust to suit your need according to [the official instructions](https://llvm.org/docs/GettingStarted.html).
 
 At this repo root:
 ```shell
 git clone  --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
-./buildllvm-iOS.sh
+./build-llvm.sh iOS      # Build for running on real iPhones
+#./build-llvm.sh iOS-Sim # Build for iOS simulator
 ```
 
 Grab a coffee as it will take roughly 30 mins to complete.
 
-Once the build process is completed, the library and include headers should be installed at `~/Download/LLVM-iOS` or `~/Download/LLVM-iOS-Simulator`.
+Once the build process is completed, the library and include headers should be installed at `LLVM-iOS` or `LLVM-iOS-Sim` in the root repo.
 (We will subsequently refer to these directories as the _LLVM installation dir_.)
 
 ### Post compilation and installation
