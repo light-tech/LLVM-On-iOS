@@ -25,7 +25,8 @@ cd build_ios
 # includes <ffi_arm64.h> and not <ffi/ffi_arm64.h>. So if we only use
 # $DOWNLOADS/libffi/Release-iphoneos/include for FFI_INCLUDE_DIR
 # the platform-specific header would not be found! ;lld;libcxx;libcxxabi
-cmake -G "Ninja" \
+ARCH=arm64
+CMAKE_ARGS=-G "Ninja" \
   -DLLVM_ENABLE_PROJECTS="clang" \
   -DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
   -DLLVM_BUILD_TOOLS=OFF \
@@ -39,13 +40,14 @@ cmake -G "Ninja" \
   -DLLVM_ENABLE_FFI=ON \
   -DFFI_INCLUDE_DIR=$LIBFFI_DIR/include/ffi \
   -DFFI_LIBRARY_DIR=$LIBFFI_DIR \
-  -DLLVM_TARGET_ARCH="arm64" \
+  -DLLVM_TARGET_ARCH="$ARCH" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_DIR \
-  -DCMAKE_OSX_ARCHITECTURES="arm64" \
+  -DCMAKE_OSX_ARCHITECTURES="$ARCH" \
   -DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake \
-  -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja \
-  ../llvm
+  -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja
+
+cmake $CMAKE_ARGS ../llvm
 
 # When building for real iOS device, we need to open `build_ios/CMakeCache.txt` at this point, search for and FORCIBLY change the value of **HAVE_FFI_CALL** to **1**.
 # For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
