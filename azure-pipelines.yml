@@ -19,14 +19,15 @@ jobs:
       tar xzf libffi.tar.xz
       test -d libffi && echo "libffi was successfully extracted"
       git clone  --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
-      ./buildllvm-iOS.sh
+      ./buildllvm-iOS.sh iOS-Sim
     displayName: 'Checkout and build llvm project'
 
   - script: |
-      cd LLVM-iOS
+      PLATFORM=iOS-Sim
+      cd LLVM-$PLATFORM
       ../prepare-llvm.sh
       cd ..
-      tar -cJf LLVM-iOS.tar.xz LLVM-iOS/
+      tar -cJf LLVM.tar.xz LLVM-$PLATFORM/
     displayName: 'Packaging LLVM build'
 
   - publish: $(System.DefaultWorkingDirectory)/llvm-project/build_ios/CMakeCache.txt
@@ -34,7 +35,7 @@ jobs:
     displayName: 'Publish CMake output for inspection'
     enabled: false
 
-  - publish: $(System.DefaultWorkingDirectory)/LLVM-iOS.tar.xz
+  - publish: $(System.DefaultWorkingDirectory)/LLVM.tar.xz
     artifact: LLVM
     displayName: 'Publish LLVM Libs'
     enabled: true

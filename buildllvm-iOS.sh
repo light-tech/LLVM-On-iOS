@@ -4,10 +4,29 @@
 #  * LLVM is checked out inside this repo
 #  * libffi is either built or downloaded in relative location libffi/Release-maccatalyst
 
+PLATFORM=$1
+
+case $PLATFORM in
+  "iOS")
+	echo "Build LLVM for iOS device"
+    ARCH=arm64
+    EXTRA_CMAKE_ARGS=-DLLVM_TARGET_ARCH="$ARCH";;
+  "iOS-Sim")
+    echo "Build LLVM for iOS simulator"
+    ARCH=x86_64
+    # Use xcodebuild -showsdks to find out the available SDK name
+    SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
+    EXTRA_CMAKE_ARGS=-DCMAKE_OSX_SYSROOT=$SYSROOT;;
+  *)
+    echo "Unknown or missing platform!"
+    ARCH=x86_64
+	exit 1;;
+esac
+
 REPO_DIR=`pwd`
 LIBFFI_DIR=$REPO_DIR/libffi/Release-maccatalyst
 LLVM_DIR=$REPO_DIR/llvm-project
-LLVM_INSTALL_DIR=$REPO_DIR/LLVM-iOS
+LLVM_INSTALL_DIR=$REPO_DIR/LLVM-$PLATFORM
 
 # Download and extract ninja
 wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
@@ -25,8 +44,7 @@ cd build_ios
 # includes <ffi_arm64.h> and not <ffi/ffi_arm64.h>. So if we only use
 # $DOWNLOADS/libffi/Release-iphoneos/include for FFI_INCLUDE_DIR
 # the platform-specific header would not be found! ;lld;libcxx;libcxxabi
-ARCH=arm64
-CMAKE_ARGS=-G "Ninja" \
+cmake -G "Ninja" \
   -DLLVM_ENABLE_PROJECTS="clang" \
   -DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
   -DLLVM_BUILD_TOOLS=OFF \
@@ -40,14 +58,12 @@ CMAKE_ARGS=-G "Ninja" \
   -DLLVM_ENABLE_FFI=ON \
   -DFFI_INCLUDE_DIR=$LIBFFI_DIR/include/ffi \
   -DFFI_LIBRARY_DIR=$LIBFFI_DIR \
-  -DLLVM_TARGET_ARCH="$ARCH" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_DIR \
   -DCMAKE_OSX_ARCHITECTURES="$ARCH" \
   -DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake \
-  -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja
-
-cmake $CMAKE_ARGS ../llvm
+  -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja \
+  $EXTRA_CMAKE_ARGS ../llvm
 
 # When building for real iOS device, we need to open `build_ios/CMakeCache.txt` at this point, search for and FORCIBLY change the value of **HAVE_FFI_CALL** to **1**.
 # For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
