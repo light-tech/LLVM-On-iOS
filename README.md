@@ -31,15 +31,12 @@ In the latest version, you should be able to edit the program, interpret it and 
 ### Preparations
 
 Before building the project, you need to either
-1. compile LLVM (see instructions down); or
-2. download and extract a prebuilt binary package from our [releases](https://github.com/light-tech/LLVM-On-iOS/releases)
-and copy the LLVM installation folder, say `~/Download/LLVM-iOS-Simulator`, to the root folder of the project like this
+1. compile LLVM (see instructions down) and copy the LLVM installation directory to Sample project; or
+2. download a prebuilt binary package from our [releases](https://github.com/light-tech/LLVM-On-iOS/releases),
+`cd` to the `Sample` project folder and do
 ```shell
-# At Sample project folder:
-cp ~/Download/LLVM-iOS-Simulator LLVM
+tar -xzf PATH_TO_DOWNLOADED_TAR_XZ # e.g. ~/Downloads/LLVM-iOS.tar.xz
 ```
-
-Here, let us download `LLVM11-iOS-Sim.tar.xz`, extract it and copy the `LLVM-iOS-Simulator` to build the app and run it on the simulator:
 
 ![Edit the program screenshot](Screenshot1.png)
 ![Interpret the program screenshot](Screenshot2.png)
