@@ -37,3 +37,9 @@ rm -rf lib2 # Comment this if you want to keep
 # Copy libffi
 cp -r $LIBFFI_BUILD_DIR/include/ffi ./include/
 cp $LIBFFI_BUILD_DIR/libffi.a ./lib/
+
+# Combine all *.a into a single llvm.a for ease of use
+libtool -static -o llvm.a lib/*.a
+
+# Remove unnecessary lib files if packaging
+rm -rf lib/*.a
