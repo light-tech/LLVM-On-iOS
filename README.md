@@ -77,23 +77,36 @@ or [build them from the source](https://gist.github.com/GraemeConradie/49d2f5962
 To use the non-JIT interpreter, we want to build LLVM with [libffi](https://github.com/libffi/libffi).
 
 Simply execute [build-libffi.sh](build-libffi.sh) in the repo root.
+```shell
+./build-libffi.sh iOS      # Build for running on real iPhones
+./build-libffi.sh iOS-Sim  # Build for iOS simulator
+./build-libffi.sh macOS    # Build for macOS
+```
+
+To package and release (for building LLVM with Azure DevOps):
+```shell
+tar -cJf libffi.tar.xz libffi/Release-iphoneos libffi/Release-maccatalyst
+```
 
 ### Build LLVM and co.
 
-Our script [build-llvm.sh](buildllvm-iOS.sh) builds LLVM + Clang for iOS and iOS simulator respectively.
+Our script [build-llvm.sh](buildllvm-iOS.sh) builds LLVM + Clang for multiple Apple platforms.
 We disable various stuffs such as `terminfo` since there is no terminal in iOS; otherwise, there will be problem when linking in Xcode.
 Feel free to adjust to suit your need according to [the official instructions](https://llvm.org/docs/GettingStarted.html).
+
+We can now build the library on [Azure DevOps](https://lightech.visualstudio.com/LLVM/_build) pipeline.
 
 At this repo root:
 ```shell
 git clone  --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
 ./build-llvm.sh iOS      # Build for running on real iPhones
-#./build-llvm.sh iOS-Sim # Build for iOS simulator
+./build-llvm.sh iOS-Sim  # Build for iOS simulator
+./build-llvm.sh macOS    # Build for macOS
 ```
 
 Grab a coffee as it will take roughly 30 mins to complete.
 
-Once the build process is completed, the library and include headers should be installed at `LLVM-iOS` or `LLVM-iOS-Sim` in the root repo.
+Once the build process is completed, the library and include headers should be installed at `LLVM-iOS`, `LLVM-iOS-Sim` or `LLVM-macOS` in the root repo.
 (We will subsequently refer to these directories as the _LLVM installation dir_.)
 
 ### Post compilation and installation
@@ -108,9 +121,10 @@ mv lib/libc++* lib2/
 #rm -rf lib2
 ```
 Otherwise, iOS will crash when loading dynamic libraries.
-Running our script [prepare-llvm.sh](prepare-llvm.sh) in the LLVM installation dir will perform the necessary set-up.
-
 Optionally, you could move the `liblld*` to `lib2` as well and the `bin` since it's unlikely you need binary linkage and the `clang` command line program in iOS app.
+
+Running our script [prepare-llvm.sh](prepare-llvm.sh) in the LLVM installation dir will perform the necessary set-up.
+We also combine all static libraries `*.a` into a single `llvm.a` for ease of use.
 
 The ready-to-use archive on our release page was created with
 ```shell
