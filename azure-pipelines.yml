@@ -28,7 +28,7 @@ jobs:
       tar -cJf LLVM.tar.xz LLVM-$PLATFORM/
     displayName: 'Packaging LLVM build'
 
-  - publish: $(System.DefaultWorkingDirectory)/llvm-project/build_ios/CMakeCache.txt
+  - publish: $(System.DefaultWorkingDirectory)/llvm-project/build_ios
     artifact: CMakeOutputs
     displayName: 'Publish CMake output for inspection'
     enabled: false

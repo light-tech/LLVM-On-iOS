@@ -70,6 +70,8 @@ cmake -G "Ninja" \
   -DCMAKE_OSX_ARCHITECTURES="$ARCH" \
   -DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake \
   -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja \
+  -DCMAKE_C_FLAGS="-target x86_64-apple-ios14.1-macabi" \
+  -DCMAKE_CXX_FLAGS="-target x86_64-apple-ios14.1-macabi" \
   $EXTRA_CMAKE_ARGS ../llvm
 
 # When building for real iOS device, we need to open `build_ios/CMakeCache.txt` at this point, search for and FORCIBLY change the value of **HAVE_FFI_CALL** to **1**.
