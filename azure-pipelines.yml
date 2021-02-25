@@ -18,15 +18,13 @@ jobs:
       wget https://github.com/light-tech/LLVM-On-iOS/releases/download/libffi_v3.3plus/libffi.tar.xz
       tar xzf libffi.tar.xz
       test -d libffi && echo "libffi was successfully extracted"
-      git clone  --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
-      ./buildllvm-iOS.sh iOS-Sim
+      git clone --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
+      ./build-llvm.sh macOS
     displayName: 'Checkout and build llvm project'
 
   - script: |
-      PLATFORM=iOS-Sim
-      cd LLVM-$PLATFORM
-      ../prepare-llvm.sh
-      cd ..
+      PLATFORM="macOS"
+      ./prepare-llvm.sh $PLATFORM
       tar -cJf LLVM.tar.xz LLVM-$PLATFORM/
     displayName: 'Packaging LLVM build'
 

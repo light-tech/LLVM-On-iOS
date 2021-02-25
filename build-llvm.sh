@@ -5,28 +5,35 @@
 #  * libffi is either built or downloaded in relative location libffi/Release-maccatalyst
 
 PLATFORM=$1
+REPO_DIR=`pwd`
+LLVM_DIR=$REPO_DIR/llvm-project
+LLVM_INSTALL_DIR=$REPO_DIR/LLVM-$PLATFORM
 
 case $PLATFORM in
   "iOS")
 	echo "Build LLVM for iOS device"
-    ARCH=arm64
-    EXTRA_CMAKE_ARGS=-DLLVM_TARGET_ARCH="$ARCH";;
+    ARCH="arm64"
+    LIBFFI_DIR="$REPO_DIR/libffi/Release-iphoneos"
+    EXTRA_CMAKE_ARGS="-DLLVM_TARGET_ARCH='$ARCH'";;
   "iOS-Sim")
     echo "Build LLVM for iOS simulator"
-    ARCH=x86_64
+    ARCH="x86_64"
+    LIBFFI_DIR="$REPO_DIR/libffi/Release-iphonesimulator"
     # Use xcodebuild -showsdks to find out the available SDK name
     SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
     EXTRA_CMAKE_ARGS=-DCMAKE_OSX_SYSROOT=$SYSROOT;;
+  "macOS")
+    echo "Build LLVM for MacOS"
+    ARCH="x86_64"
+    LIBFFI_DIR="$REPO_DIR/libffi/Release-maccatalyst"
+    # Use xcodebuild -showsdks to find out the available SDK name
+    SYSROOT=`xcodebuild -version -sdk macosx Path`
+    EXTRA_CMAKE_ARGS="-DCMAKE_OSX_SYSROOT=$SYSROOT";;
   *)
     echo "Unknown or missing platform!"
     ARCH=x86_64
 	exit 1;;
 esac
-
-REPO_DIR=`pwd`
-LIBFFI_DIR=$REPO_DIR/libffi/Release-maccatalyst
-LLVM_DIR=$REPO_DIR/llvm-project
-LLVM_INSTALL_DIR=$REPO_DIR/LLVM-$PLATFORM
 
 # Download and extract ninja
 wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
