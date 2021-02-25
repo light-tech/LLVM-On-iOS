@@ -1,5 +1,24 @@
 # Script to prepare the LLVM built for usage in Xcode
-# To be executed in LLVM-iOS or LLVM-iOS-Simulator folder
+
+PLATFORM=$1
+
+case $PLATFORM in
+  "iOS")
+	echo "Prepare LLVM for iOS device"
+    ARCH=arm64
+    LIBFFI_BUILD_DIR=`pwd`/libffi/Release-iphoneos;;
+  "iOS-Sim")
+    echo "Prepare LLVM for iOS simulator"
+    LIBFFI_BUILD_DIR=`pwd`/libffi/Release-iphonesimulator;;
+  "macOS")
+    echo "Prepare LLVM for MacOS"
+    LIBFFI_BUILD_DIR=`pwd`/libffi/Release-maccatalyst;;
+  *)
+    echo "Unknown or missing platform!"
+	exit 1;;
+esac
+
+cd LLVM-$PLATFORM
 
 # Make a text file with the name of the folder where this script was run so that we can distinguish between them in app project dir 
 folder=$(basename $(pwd))
@@ -16,7 +35,5 @@ mv lib/libc++* lib2/
 rm -rf lib2 # Comment this if you want to keep
 
 # Copy libffi
-
-LIBFFI_BUILD_DIR=`pwd`/../libffi/Release-maccatalyst
 cp -r $LIBFFI_BUILD_DIR/include/ffi ./include/
 cp $LIBFFI_BUILD_DIR/libffi.a ./lib/
