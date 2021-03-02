@@ -19,21 +19,32 @@ jobs:
       tar xzf libffi.tar.xz
       test -d libffi && echo "libffi was successfully extracted"
       git clone --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
-      ./build-llvm.sh macOS
+      PLATFORMS=("iOS" "macOS")
+      for p in ${PLATFORMS[@]}; do
+        echo "Build LLVM for $p"
+        ./build-llvm.sh $p
+        ./prepare-llvm.sh $p
+        tar -cJf LLVM-$p.tar.xz LLVM-$p/
+      done
+      xcodebuild -create-xcframework -library LLVM-iOS/llvm.a -headers LLVM-iOS/include -library LLVM-macOS/llvm.a -headers LLVM-macOS/include -output LLVM.xcframework
     displayName: 'Checkout and build llvm project'
 
-  - script: |
-      PLATFORM="macOS"
-      ./prepare-llvm.sh $PLATFORM
-      tar -cJf LLVM.tar.xz LLVM-$PLATFORM/
-    displayName: 'Packaging LLVM build'
-
-  - publish: $(System.DefaultWorkingDirectory)/llvm-project/build_ios
+  - publish: $(System.DefaultWorkingDirectory)/llvm-project/build
     artifact: CMakeOutputs
     displayName: 'Publish CMake output for inspection'
     enabled: false
 
-  - publish: $(System.DefaultWorkingDirectory)/LLVM.tar.xz
+  - publish: $(System.DefaultWorkingDirectory)/LLVM.xcframework
     artifact: LLVM
-    displayName: 'Publish LLVM Libs'
+    displayName: 'Publish LLVM XCFramework'
+    enabled: true
+
+  - publish: $(System.DefaultWorkingDirectory)/LLVM-iOS.tar.xz
+    artifact: LLVM-iOS
+    displayName: 'Publish LLVM iOS Lib'
+    enabled: true
+
+  - publish: $(System.DefaultWorkingDirectory)/LLVM-macOS.tar.xz
+    artifact: LLVM-macOS
+    displayName: 'Publish LLVM macOS Lib'
     enabled: true
