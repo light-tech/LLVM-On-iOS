@@ -21,3 +21,4 @@ for p in ${PLATFORMS[@]}; do
 done
 
 xcodebuild -create-xcframework -library LLVM-iOS/llvm.a -headers LLVM-iOS/include -library LLVM-macOS/llvm.a -headers LLVM-macOS/include -output LLVM.xcframework
+tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework

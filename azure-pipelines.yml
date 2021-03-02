@@ -22,8 +22,8 @@ jobs:
     displayName: 'Publish CMake output for inspection'
     enabled: false
 
-  - publish: $(System.DefaultWorkingDirectory)/LLVM.xcframework
-    artifact: LLVM
+  - publish: $(System.DefaultWorkingDirectory)/LLVM.xcframework.tar.xz
+    artifact: LLVM.xcframework
     displayName: 'Publish LLVM XCFramework'
     enabled: true
 
