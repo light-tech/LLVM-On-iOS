@@ -9,49 +9,8 @@ REPO_DIR=`pwd`
 LLVM_DIR=$REPO_DIR/llvm-project
 LLVM_INSTALL_DIR=$REPO_DIR/LLVM-$PLATFORM
 
-case $PLATFORM in
-  "iOS")
-	echo "Build LLVM for iOS device"
-    ARCH="arm64"
-    LIBFFI_DIR="$REPO_DIR/libffi/Release-iphoneos"
-    EXTRA_CMAKE_ARGS="-DLLVM_TARGET_ARCH='$ARCH'";;
-  "iOS-Sim")
-    echo "Build LLVM for iOS simulator"
-    ARCH="x86_64"
-    LIBFFI_DIR="$REPO_DIR/libffi/Release-iphonesimulator"
-    # Use xcodebuild -showsdks to find out the available SDK name
-    SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
-    EXTRA_CMAKE_ARGS=-DCMAKE_OSX_SYSROOT=$SYSROOT;;
-  "macOS")
-    echo "Build LLVM for MacOS"
-    ARCH="x86_64"
-    LIBFFI_DIR="$REPO_DIR/libffi/Release-maccatalyst"
-    # Use xcodebuild -showsdks to find out the available SDK name
-    SYSROOT=`xcodebuild -version -sdk macosx Path`
-    EXTRA_CMAKE_ARGS="-DCMAKE_OSX_SYSROOT=$SYSROOT";;
-  *)
-    echo "Unknown or missing platform!"
-    ARCH=x86_64
-	exit 1;;
-esac
-
-# Download and extract ninja
-wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
-unzip ninja-mac.zip
-
-cd llvm-project
-
-rm -rf build_ios
-mkdir build_ios
-cd build_ios
-
-# Generate configuration for building for iOS Target (on MacOS Host)
-# Note: AArch64 = arm64
-# Note: We have to use include/ffi subdir for libffi as the main header ffi.h
-# includes <ffi_arm64.h> and not <ffi/ffi_arm64.h>. So if we only use
-# $DOWNLOADS/libffi/Release-iphoneos/include for FFI_INCLUDE_DIR
-# the platform-specific header would not be found! ;lld;libcxx;libcxxabi
-cmake -G "Ninja" \
+# https://opensource.com/article/18/5/you-dont-know-bash-intro-bash-arrays
+CMAKE_ARGS=(-G "Ninja" \
   -DLLVM_ENABLE_PROJECTS="clang" \
   -DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
   -DLLVM_BUILD_TOOLS=OFF \
@@ -63,16 +22,66 @@ cmake -G "Ninja" \
   -DLLVM_ENABLE_RTTI=OFF \
   -DLLVM_ENABLE_TERMINFO=OFF \
   -DLLVM_ENABLE_FFI=ON \
-  -DFFI_INCLUDE_DIR=$LIBFFI_DIR/include/ffi \
-  -DFFI_LIBRARY_DIR=$LIBFFI_DIR \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_DIR \
-  -DCMAKE_OSX_ARCHITECTURES="$ARCH" \
   -DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake \
-  -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja \
-  -DCMAKE_C_FLAGS="-target x86_64-apple-ios14.1-macabi" \
-  -DCMAKE_CXX_FLAGS="-target x86_64-apple-ios14.1-macabi" \
-  $EXTRA_CMAKE_ARGS ../llvm
+  -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja)
+
+case $PLATFORM in
+  "iOS")
+	echo "Build LLVM for iOS device"
+    ARCH="arm64"
+    LIBFFI_DIR="$REPO_DIR/libffi/Release-iphoneos"
+    CMAKE_ARGS+=("-DLLVM_TARGET_ARCH='$ARCH'");;
+  "iOS-Sim")
+    echo "Build LLVM for iOS simulator"
+    ARCH="x86_64"
+    LIBFFI_DIR="$REPO_DIR/libffi/Release-iphonesimulator"
+    # Use xcodebuild -showsdks to find out the available SDK name
+    SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
+    CMAKE_ARGS+=("-DCMAKE_OSX_SYSROOT=$SYSROOT");;
+  "macOS")
+    echo "Build LLVM for MacOS"
+    ARCH="x86_64"
+    LIBFFI_DIR="$REPO_DIR/libffi/Release-maccatalyst"
+    # Use xcodebuild -showsdks to find out the available SDK name
+    SYSROOT=`xcodebuild -version -sdk macosx Path`
+    CMAKE_ARGS+=("-DCMAKE_OSX_SYSROOT=$SYSROOT");; # "-DCMAKE_C_FLAGS=-target x86_64-apple-ios14.1-macabi" "-DCMAKE_CXX_FLAGS=-target x86_64-apple-ios14.1-macabi");;
+  *)
+    echo "Unknown or missing platform!"
+    ARCH=x86_64
+	exit 1;;
+esac
+
+CMAKE_ARGS+=("-DFFI_INCLUDE_DIR=$LIBFFI_DIR/include/ffi" "-DFFI_LIBRARY_DIR=$LIBFFI_DIR" "-DCMAKE_OSX_ARCHITECTURES='$ARCH'")
+
+echo "Running CMake with " ${#CMAKE_ARGS[@]} "arguments"
+for i in ${!CMAKE_ARGS[@]}; do
+    echo ${CMAKE_ARGS[$i]}
+done
+
+# Download and extract ninja
+wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
+unzip ninja-mac.zip
+
+cd llvm-project
+
+rm -rf build
+mkdir build
+cd build
+
+# Generate configuration for building for iOS Target (on MacOS Host)
+# Note: AArch64 = arm64
+# Note: We have to use include/ffi subdir for libffi as the main header ffi.h
+# includes <ffi_arm64.h> and not <ffi/ffi_arm64.h>. So if we only use
+# $DOWNLOADS/libffi/Release-iphoneos/include for FFI_INCLUDE_DIR
+# the platform-specific header would not be found! ;lld;libcxx;libcxxabi
+case $PLATFORM in
+  "iOS"|"iOS-Sim")
+	    cmake ${CMAKE_ARGS[@]} ../llvm;;
+  "macOS")
+        cmake ${CMAKE_ARGS[@]} -DCMAKE_C_FLAGS="-target x86_64-apple-ios14.1-macabi" -DCMAKE_CXX_FLAGS="-target x86_64-apple-ios14.1-macabi" ../llvm;;
+esac
 
 # When building for real iOS device, we need to open `build_ios/CMakeCache.txt` at this point, search for and FORCIBLY change the value of **HAVE_FFI_CALL** to **1**.
 # For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
