@@ -1,8 +1,9 @@
 # Script to build LLVM for iOS Device
 # Assumptions:
 #  * Run at this repo root
+#  * ninja was extracted at this repo root
 #  * LLVM is checked out inside this repo
-#  * libffi is either built or downloaded in relative location libffi/Release-maccatalyst
+#  * libffi is either built or downloaded in relative location libffi/Release-*
 
 PLATFORM=$1
 REPO_DIR=`pwd`
@@ -59,10 +60,6 @@ echo "Running CMake with " ${#CMAKE_ARGS[@]} "arguments"
 for i in ${!CMAKE_ARGS[@]}; do
     echo ${CMAKE_ARGS[$i]}
 done
-
-# Download and extract ninja
-wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
-unzip ninja-mac.zip
 
 cd llvm-project
 
