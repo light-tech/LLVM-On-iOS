@@ -15,7 +15,7 @@ jobs:
   steps:
 
   - script: ./build-llvm-framework.sh
-    displayName: 'Checkout and build llvm project'
+    displayName: 'Checkout and build llvm framework'
 
   - publish: $(System.DefaultWorkingDirectory)/llvm-project/build
     artifact: CMakeOutputs
@@ -35,4 +35,9 @@ jobs:
   - publish: $(System.DefaultWorkingDirectory)/LLVM-macOS.tar.xz
     artifact: LLVM-macOS
     displayName: 'Publish LLVM macOS Lib'
+    enabled: true
+
+  - publish: $(System.DefaultWorkingDirectory)/LLVM-Clang-iOS.tar.xz
+    artifact: LLVM-Clang-iOS
+    displayName: 'Publish LLVM Clang Headers'
     enabled: true
