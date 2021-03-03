@@ -75,13 +75,12 @@ private:
 
 public:
   static Expected<std::unique_ptr<SimpleJIT>> Create() {
-#if TARGET_OS_SIMULATOR
+#ifdef __aarch64__
+    auto JTMB = new JITTargetMachineBuilder(Triple("arm64-apple-darwin")); // FIXME: Memory leaks here
+#else
     auto JTMB = JITTargetMachineBuilder::detectHost();
     if (!JTMB)
       return JTMB.takeError();
-#else
-    // FIXME: Memory leaks
-    auto JTMB = new JITTargetMachineBuilder(Triple("arm64-apple-darwin"));
 #endif
 
     auto TM = JTMB->createTargetMachine();
@@ -136,11 +135,12 @@ int clangInterpret(int argc, const char **argv, llvm::raw_ostream &errorOutputSt
   IntrusiveRefCntPtr<DiagnosticIDs> DiagID(new DiagnosticIDs());
   DiagnosticsEngine Diags(DiagID, &*DiagOpts, DiagClient);
 
-#if TARGET_OS_SIMULATOR
-  const std::string TripleStr = llvm::sys::getProcessTriple();
-#else
+#ifdef __aarch64__
   const std::string TripleStr = "arm64-apple-darwin";
+#else
+  const std::string TripleStr = llvm::sys::getProcessTriple();
 #endif
+
   llvm::Triple T(TripleStr);
 
   // Use ELF on Windows-32 and MingW for now.
