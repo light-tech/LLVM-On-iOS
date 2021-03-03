@@ -24,18 +24,18 @@ llvm::raw_ostream &errorOutputStream
 to `clangInterpret` and replace all `llvm::errs()` with `errorOutputStream` so we can capture the compilation output and pass it back to the app front-end to display to the user.
 
 4. **For real iOS device**: The implementation of [`llvm::sys::getProcessTriple()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/Support/Host.cpp) is currently bogus according to the implementation of [`JITTargetMachineBuilder::detectHost()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/ExecutionEngine/Orc/JITTargetMachineBuilder.cpp).
-So we need to add the appropriate conditional compilation directive `#if TARGET_OS_SIMULATOR ... #else ... #endif` to give it the correct triple. (The platform macro is documented at `<TargetConditionals.h>`.)
+So we need to add the appropriate conditional compilation directive `#ifdef __aarch64__ ... #else ... #endif` to give it the correct triple.
 
 In the latest version, you should be able to edit the program, interpret it and see the output in the app UI.
 
 ### Preparations
 
 Before building the project, you need to either
-1. compile LLVM (see instructions down) and copy the LLVM installation directory to Sample project; or
-2. download a prebuilt binary package from our [releases](https://github.com/light-tech/LLVM-On-iOS/releases),
-`cd` to the `Sample` project folder and do
+1. compile LLVM (see instructions down below) and copy the `LLVM.xcframework` to Sample project; or
+2. download our prebuilt XCFramework (the file named `LLVM.xcframework.tar.xz`) from our [releases](https://github.com/light-tech/LLVM-On-iOS/releases),
+then `cd` to the `Sample` project folder and do
 ```shell
-tar -xzf PATH_TO_DOWNLOADED_TAR_XZ # e.g. ~/Downloads/LLVM-iOS.tar.xz
+tar -xzf PATH_TO_DOWNLOADED_TAR_XZ # e.g. ~/Downloads/LLVM.xcframework.tar.xz
 ```
 
 ![Edit the program screenshot](Screenshot1.png)
@@ -45,7 +45,7 @@ tar -xzf PATH_TO_DOWNLOADED_TAR_XZ # e.g. ~/Downloads/LLVM-iOS.tar.xz
 
 For simulator, can only build **Debug** version only!
 
-Do NOT expect the app to work on real iPhone due to iOS security preventing [Just-In-Time (JIT) Execution](https://saagarjha.com/blog/2020/02/23/jailed-just-in-time-compilation-on-ios/) that the interpreter example was doing.
+You can run the app on the Mac (thank to Mac Catalyst) and iOS simulator. Do NOT expect the app to work on real iPhone due to iOS security preventing [Just-In-Time (JIT) Execution](https://saagarjha.com/blog/2020/02/23/jailed-just-in-time-compilation-on-ios/) that the interpreter example was doing.
 By pulling out the device crash logs, the reason turns out to be the fact the [code generated in-memory by LLVM/Clang wasn't signed](http://iphonedevwiki.net/index.php/Code_Signing) and so the app was terminated with SIGTERM CODESIGN.
 
 If there is compilation error, the error message was printed out instead of crashing as expected:
@@ -58,14 +58,14 @@ If there is compilation error, the error message was printed out instead of cras
 To make the app work on real iPhone _untethered from Xcode_, one possibility is to use compilation into binary, somehow sign it and use [system()](https://stackoverflow.com/questions/32439095/how-to-execute-a-command-line-in-iphone).
 Another possibility would be to use the slower LLVM bytecode interpreter instead of ORC JIT that the example was doing, as many [existing terminal apps](https://opensource.com/article/20/9/run-linux-ios) illustrated.
 
-Build LLVM for iOS (physical device and simulator)
---------------------------------------------------
+Build LLVM for iOS
+------------------
 
 ### The tools we needs
 
  * [Xcode](https://developer.apple.com/xcode/): Download from app store.
- * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to PATH.
- * [Ninja](https://github.com/ninja-build/ninja/releases): Download and extract the ninja executable to `~/Downloads` folder.
+ * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to `$PATH`.
+ * [Ninja](https://github.com/ninja-build/ninja/releases): Download and extract the ninja executable to this repo root.
  * The GNU tools `autoconf`, `automake` and `libtool` are needed to build libffi, install them with homebrew from the terminal
 ```shell
 brew install autoconf automake libtool
@@ -83,53 +83,18 @@ Simply execute [build-libffi.sh](build-libffi.sh) in the repo root.
 ./build-libffi.sh macOS    # Build for macOS
 ```
 
-To package and release (for building LLVM with Azure DevOps):
-```shell
-tar -cJf libffi.tar.xz libffi/Release-iphoneos libffi/Release-maccatalyst
-```
-
 ### Build LLVM and co.
 
-Our script [build-llvm.sh](buildllvm-iOS.sh) builds LLVM + Clang for multiple Apple platforms.
-We disable various stuffs such as `terminfo` since there is no terminal in iOS; otherwise, there will be problem when linking in Xcode.
-Feel free to adjust to suit your need according to [the official instructions](https://llvm.org/docs/GettingStarted.html).
+Apple has introduced [XCFramework](https://developer.apple.com/videos/play/wwdc2019/416/) to allow packaging a library for multiple-platforms (iOS, Simulator, watchOS, macOS) and CPU architectures (x86_64, arm64) that could be easily added to a project.
 
-We can now build the library on [Azure DevOps](https://lightech.visualstudio.com/LLVM/_build) pipeline.
+Our script [build-llvm-framework.sh](build-llvm-framework.sh) builds LLVM for several iOS platforms and packages it as an XCFramework so we do not have to switch out the libraries when we build the app for different targets (e.g. testing the app on real iPhone arm64 vs simulator x86_64).
 
 At this repo root:
 ```shell
-git clone  --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
-./build-llvm.sh iOS      # Build for running on real iPhones
-./build-llvm.sh iOS-Sim  # Build for iOS simulator
-./build-llvm.sh macOS    # Build for macOS
+./build-llvm-framework.sh
 ```
 
-Grab a coffee as it will take roughly 30 mins to complete.
-
-Once the build process is completed, the library and include headers should be installed at `LLVM-iOS`, `LLVM-iOS-Sim` or `LLVM-macOS` in the root repo.
-(We will subsequently refer to these directories as the _LLVM installation dir_.)
-
-### Post compilation and installation
-
-Before being able to use in Xcode, in the built folder, we first need to move the `lib/cmake` and `lib/*.dylib` out of `lib/`:
-```shell
-cd LLVM-iOS
-mkdir lib2
-mv lib/cmake lib2/
-mv lib/*.dylib lib2/
-mv lib/libc++* lib2/
-#rm -rf lib2
-```
-Otherwise, iOS will crash when loading dynamic libraries.
-Optionally, you could move the `liblld*` to `lib2` as well and the `bin` since it's unlikely you need binary linkage and the `clang` command line program in iOS app.
-
-Running our script [prepare-llvm.sh](prepare-llvm.sh) in the LLVM installation dir will perform the necessary set-up.
-We also combine all static libraries `*.a` into a single `llvm.a` for ease of use.
-
-The ready-to-use archive on our release page was created with
-```shell
-tar -cJf LLVM-11.0.1-iOS.tar.xz LLVM-iOS/
-```
+We can now build the library on an [Azure DevOps](https://lightech.visualstudio.com/LLVM/_build) pipeline.
 
 Behind the Scene
 ----------------
@@ -167,21 +132,11 @@ is fairly useful in helping us write the Objective-C bridging class `LLVMBridge`
 
 ### Configure iOS App Xcode Project
 
-1. Create a new iOS app project in Xcode and copy an LLVM installation to the project folder.
-Unfortunately, LLVM cannot build fat binary for iOS at the moment so we have to manually switch between the two LLVM installations when we switch testing between real iOS device (ARM) or iOS simulator (x86_64).
-A good approach is to copy both folders `~/Download/LLVM-iOS` or `~/Download/LLVM-iOS-Simulator` to the project folder and rename one of them to `LLVM` depending on our build target.
+1. Create a new iOS app project in Xcode and copy `LLVM.xcframework` to the project folder.
 
-2. Add the LLVM static libraries to your project by right click on the Sample project, choose **Add files to "YOUR PROJECT NAME"** and select the **LLVM/lib** folder.
-Enable **Create groups** but not **Copy items if needed**.
+2. In Xcode, add `LLVM.xcframework` to the project's Framework and Libraries. Choose **Do not embed** so that the static library is linked into the app and the entire framework is NOT copied to the app bundle.
 
-3. Next, we add `LLVM/include` to header search path so that our C++/Objective-C++ code can `#include` the LLVM's headers.
-Go to **Build settings** your project, click on **All** and search for `header`.
-You should find **Header Search Paths** under **Search Paths**.
-Add a new item `$(PROJECT_DIR)/LLVM/include`.
-
-![Header Search Paths Setting](HeaderSearchPaths.png)
-
-4. To create the Objective-C bridge between Swift and C++ mentioned at the beginning, add to your project a new header file, say `LLVMBridge.h` and an implementation file, say `LLVMBridge.mm` (here, we use the `.mm` extension for Objective-C++ since we do need C++ to implement our `LLVMBridge` class) and then change the Objective-C bridging header setting in the project file to tell Xcode that the Objective-C class defined in `LLVMBridge.h` should be exposed to Swift.
+3. To create the Objective-C bridge between Swift and C++ mentioned at the beginning, add to your project a new header file, say `LLVMBridge.h` and an implementation file, say `LLVMBridge.mm` (here, we use the `.mm` extension for Objective-C++ since we do need C++ to implement our `LLVMBridge` class) and then change the Objective-C bridging header setting in the project file to tell Xcode that the Objective-C class defined in `LLVMBridge.h` should be exposed to Swift.
 Again, go to **Build settings** your project and search for `bridg` and you should find **Objective-C Bridging Header** under **Swift Compiler - General**.
 Set it to `PROJECT_NAME/LLVMBridge.h` or if you are using more than just LLVM, a header file of your choice (but that header should include `LLVMBridge.h`).
 
@@ -192,7 +147,7 @@ Set it to `PROJECT_NAME/LLVMBridge.h` or if you are using more than just LLVM, a
 At this point, we should be able to run the project on iOS simulator.
 **To build the app for real iOS devices, an extra step is needed.**
 
-5. Since we are using a bunch of precompiled static libraries (and not the actual C++ source code in our app), we need to disable bitcode. Search for `bitcod` and set **Enable Bitcode** setting to `No`.
+4. Since we are using a bunch of precompiled static libraries (and not the actual C++ source code in our app), we need to disable bitcode. Search for `bitcod` and set **Enable Bitcode** setting to `No`.
 
 ![Bitcode Setting](DisableBitcode.png)
 
