@@ -1,7 +1,10 @@
 LLVM on iOS
 ===========
 
-The goal of this project is to illustrate how to use LLVM + Clang on iOS.
+The goal of this project is to illustrate how to use LLVM + Clang to provide an iOS app with some scripting capability.
+
+![Edit the program screenshot](Screenshot1.png)
+![Interpret the program screenshot](Screenshot2.png)
 
 For the eager reader, we provide a sample iOS app project in the [Sample/](Sample) folder which has **NO license attached** so feel free to do whatever you want with it.
 In this app, we use Clang's C interpreter example located in `examples/clang-interpreter/main.cpp` of Clang source code to _interpret a simple C++ program_ and _print out the output on the iOS app's user interface_.
@@ -37,9 +40,6 @@ then `cd` to the `Sample` project folder and do
 ```shell
 tar -xzf PATH_TO_DOWNLOADED_TAR_XZ # e.g. ~/Downloads/LLVM.xcframework.tar.xz
 ```
-
-![Edit the program screenshot](Screenshot1.png)
-![Interpret the program screenshot](Screenshot2.png)
 
 ### Known Limitations
 
