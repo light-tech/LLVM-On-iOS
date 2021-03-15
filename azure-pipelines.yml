@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- master
+- experimental
 
 jobs:
 - job: BuildLLVMJob
@@ -43,16 +43,6 @@ jobs:
   - publish: $(System.DefaultWorkingDirectory)/LLVM.xcframework.tar.xz
     artifact: LLVM.xcframework
     displayName: 'Publish LLVM XCFramework'
-    enabled: false
-
-  - publish: $(System.DefaultWorkingDirectory)/LLVM-iOS.tar.xz
-    artifact: LLVM-iOS
-    displayName: 'Publish LLVM iOS Lib'
-    enabled: false
-
-  - publish: $(System.DefaultWorkingDirectory)/LLVM-macOS.tar.xz
-    artifact: LLVM-macOS
-    displayName: 'Publish LLVM macOS Lib'
     enabled: false
 
   - publish: $(System.DefaultWorkingDirectory)/LLVM-Clang-iOS.tar.xz
