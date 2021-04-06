@@ -18,11 +18,13 @@ jobs:
       ./build-tools.sh
       export REPO_ROOT=`pwd`
       export PATH=$PATH:$REPO_ROOT/tools/bin
-      PLATFORMS=("iOS" "macOS") # iOS-Sim
+      # PLATFORMS=("iOS" "macOS")
+      PLATFORMS=("iOS-Sim")
       for p in ${PLATFORMS[@]}; do
         ./build-libffi.sh $p
       done
-      tar -cJf libffi.tar.xz libffi/Release-iphoneos libffi/Release-maccatalyst
+      # tar -cJf libffi.tar.xz libffi/Release-iphoneos libffi/Release-maccatalyst
+      tar -cJf libffi.tar.xz libffi/Release-iphonesimulator
     displayName: 'Checkout and build libffi'
     enabled: true
 
@@ -33,7 +35,7 @@ jobs:
 
   - script: ./build-llvm-framework.sh
     displayName: 'Checkout and build llvm framework'
-    enabled: false
+    enabled: true
 
   - publish: $(System.DefaultWorkingDirectory)/llvm-project/build
     artifact: CMakeOutputs
@@ -43,7 +45,7 @@ jobs:
   - publish: $(System.DefaultWorkingDirectory)/LLVM.xcframework.tar.xz
     artifact: LLVM.xcframework
     displayName: 'Publish LLVM XCFramework'
-    enabled: false
+    enabled: true
 
   - publish: $(System.DefaultWorkingDirectory)/LLVM-Clang-iOS.tar.xz
     artifact: LLVM-Clang-iOS

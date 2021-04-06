@@ -11,7 +11,8 @@ test -d libffi && echo "libffi was successfully extracted"
 
 git clone --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
 
-PLATFORMS=("iOS" "macOS") # iOS-Sim
+# PLATFORMS=("iOS" "macOS")
+PLATFORMS=("iOS-Sim")
 for p in ${PLATFORMS[@]}; do
     echo "Build LLVM for $p"
     ./build-llvm.sh $p
@@ -20,5 +21,6 @@ for p in ${PLATFORMS[@]}; do
     tar -cJf LLVM-Clang-$p.tar.xz LLVM-$p/lib/clang/
 done
 
-xcodebuild -create-xcframework -library LLVM-iOS/llvm.a -headers LLVM-iOS/include -library LLVM-macOS/llvm.a -headers LLVM-macOS/include -output LLVM.xcframework
+# xcodebuild -create-xcframework -library LLVM-iOS/llvm.a -headers LLVM-iOS/include -library LLVM-macOS/llvm.a -headers LLVM-macOS/include -output LLVM.xcframework
+xcodebuild -create-xcframework -library LLVM-iOS-Sim/llvm.a -headers LLVM-iOS-Sim/include -output LLVM.xcframework
 tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
