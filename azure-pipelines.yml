@@ -14,26 +14,7 @@ jobs:
 
   steps:
 
-  - script: |
-      ./build-tools.sh
-      export REPO_ROOT=`pwd`
-      export PATH=$PATH:$REPO_ROOT/tools/bin
-      # PLATFORMS=("iOS" "macOS")
-      PLATFORMS=("iOS-Sim")
-      for p in ${PLATFORMS[@]}; do
-        ./build-libffi.sh $p
-      done
-      # tar -cJf libffi.tar.xz libffi/Release-iphoneos libffi/Release-maccatalyst
-      tar -cJf libffi.tar.xz libffi/Release-iphonesimulator
-    displayName: 'Checkout and build libffi'
-    enabled: true
-
-  - publish: $(System.DefaultWorkingDirectory)/libffi.tar.xz
-    artifact: libffi
-    displayName: 'Publish libffi'
-    enabled: true
-
-  - script: ./build-llvm-framework.sh
+  - script: ./build-llvm-framework.sh "iOS" "iOS-Sim" "macOS"
     displayName: 'Checkout and build llvm framework'
     enabled: true
 
