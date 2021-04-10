@@ -65,23 +65,6 @@ Build LLVM for iOS
 
  * [Xcode](https://developer.apple.com/xcode/): Download from app store.
  * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to `$PATH`.
- * [Ninja](https://github.com/ninja-build/ninja/releases): Download and extract the ninja executable to this repo root.
- * The GNU tools `autoconf`, `automake` and `libtool` are needed to build libffi, install them with homebrew from the terminal
-```shell
-brew install autoconf automake libtool
-```
-or [build them from the source](https://gist.github.com/GraemeConradie/49d2f5962fa72952bc6c64ac093db2d5).
-
-### Build libffi
-
-To use the non-JIT interpreter, we want to build LLVM with [libffi](https://github.com/libffi/libffi).
-
-Simply execute [build-libffi.sh](build-libffi.sh) in the repo root.
-```shell
-./build-libffi.sh iOS      # Build for running on real iPhones
-./build-libffi.sh iOS-Sim  # Build for iOS simulator
-./build-libffi.sh macOS    # Build for macOS
-```
 
 ### Build LLVM and co.
 
@@ -91,7 +74,7 @@ Our script [build-llvm-framework.sh](build-llvm-framework.sh) builds LLVM for se
 
 At this repo root:
 ```shell
-./build-llvm-framework.sh
+./build-llvm-framework.sh iOS iOS-Sim macOS
 ```
 
 We can now build the library on an [Azure DevOps](https://lightech.visualstudio.com/LLVM/_build) pipeline.
