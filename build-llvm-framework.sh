@@ -12,6 +12,7 @@ export PATH=$PATH:$REPO_ROOT/tools/bin
 wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
 unzip ninja-mac.zip
 
+git clone https://github.com/libffi/libffi.git
 git clone --single-branch --branch release/11.x https://github.com/llvm/llvm-project.git
 
 FRAMEWORKS_ARGS=()
