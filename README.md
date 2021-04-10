@@ -3,8 +3,8 @@ LLVM on iOS
 
 The goal of this project is to illustrate how to use LLVM + Clang to provide an iOS app with some scripting capability.
 
-![Edit the program screenshot](Screenshot1.png)
-![Interpret the program screenshot](Screenshot2.png)
+![Edit the program screenshot](Screenshots/Screenshot1.png)
+![Interpret the program screenshot](Screenshots/Screenshot2.png)
 
 For the eager reader, we provide a sample iOS app project in the [Sample/](Sample) folder which has **NO license attached** so feel free to do whatever you want with it.
 In this app, we use Clang's C interpreter example located in `examples/clang-interpreter/main.cpp` of Clang source code to _interpret a simple C++ program_ and _print out the output on the iOS app's user interface_.
@@ -50,8 +50,8 @@ By pulling out the device crash logs, the reason turns out to be the fact the [c
 
 If there is compilation error, the error message was printed out instead of crashing as expected:
 
-![Add #include non-existing header](Screenshot_Real_iPhone1.png)
-![Compilation error was printed out](Screenshot_Real_iPhone2.png)
+![Add #include non-existing header](Screenshots/Screenshot_Real_iPhone1.png)
+![Compilation error was printed out](Screenshots/Screenshot_Real_iPhone2.png)
 
 **Note**: It does work if one [launches the app from Xcode](https://9to5mac.com/2020/11/06/ios-14-2-brings-jit-compilation-support-which-enables-emulation-apps-at-full-performance/) though.
 
@@ -142,13 +142,13 @@ Set it to `PROJECT_NAME/LLVMBridge.h` or if you are using more than just LLVM, a
 
 **Note**: Only Objective-C classes in *Objective-C Bridging Header* are visible to Swift!
 
-![Objective-C Bridging Header Setting](ObjCBridgeHeader.png)
+![Objective-C Bridging Header Setting](Screenshots/ObjCBridgeHeader.png)
 
 At this point, we should be able to run the project on iOS simulator.
 **To build the app for real iOS devices, an extra step is needed.**
 
 4. Since we are using a bunch of precompiled static libraries (and not the actual C++ source code in our app), we need to disable bitcode. Search for `bitcod` and set **Enable Bitcode** setting to `No`.
 
-![Bitcode Setting](DisableBitcode.png)
+![Bitcode Setting](Screenshots/DisableBitcode.png)
 
 Now you are ready to make use of LLVM glory.
