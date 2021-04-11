@@ -74,7 +74,7 @@ Our script [build-llvm-framework.sh](build-llvm-framework.sh) builds LLVM for se
 
 At this repo root:
 ```shell
-./build-llvm-framework.sh iOS iOS-Sim macOS
+./build-llvm-framework.sh iphoneos iphonesimulator maccatalyst
 ```
 
 We can now build the library on an [Azure DevOps](https://lightech.visualstudio.com/LLVM/_build) pipeline.

@@ -7,14 +7,9 @@ REPO_DIR=`pwd`
 LIBFFI_DIR="$REPO_DIR/libffi"
 
 case $PLATFORM in
-  "iOS")
-    SDK="iphoneos"
-    SDK_ARG="-sdk $SDK";;
-  "iOS-Sim")
-    echo "Prepare LLVM for iOS simulator"
-    SDK="iphonesimulator"
-    SDK_ARG="-sdk $SDK";;
-  "macOS")
+  "iphoneos"|"iphonesimulator")
+    SDK_ARG="-sdk $PLATFORM";;
+  "maccatalyst")
     SDK="maccatalyst";;
     # SDK_ARG=-sdk $SDK # Do not set SDK_ARG
   *)

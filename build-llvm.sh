@@ -9,6 +9,7 @@ PLATFORM=$1
 REPO_DIR=`pwd`
 LLVM_DIR=$REPO_DIR/llvm-project
 LLVM_INSTALL_DIR=$REPO_DIR/LLVM-$PLATFORM
+LIBFFI_DIR=$REPO_DIR/libffi/Release-$PLATFORM
 
 # https://opensource.com/article/18/5/you-dont-know-bash-intro-bash-arrays
 CMAKE_ARGS=(-G "Ninja" \
@@ -29,22 +30,19 @@ CMAKE_ARGS=(-G "Ninja" \
   -DCMAKE_MAKE_PROGRAM=$REPO_DIR/ninja)
 
 case $PLATFORM in
-  "iOS")
+  "iphoneos")
 	echo "Build LLVM for iOS device"
     ARCH="arm64"
-    LIBFFI_DIR="$REPO_DIR/libffi/Release-iphoneos"
     CMAKE_ARGS+=("-DLLVM_TARGET_ARCH='$ARCH'");;
-  "iOS-Sim")
+  "iphonesimulator")
     echo "Build LLVM for iOS simulator"
     ARCH="x86_64"
-    LIBFFI_DIR="$REPO_DIR/libffi/Release-iphonesimulator"
     # Use xcodebuild -showsdks to find out the available SDK name
     SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
     CMAKE_ARGS+=("-DCMAKE_OSX_SYSROOT=$SYSROOT");;
-  "macOS")
+  "maccatalyst")
     echo "Build LLVM for MacOS"
     ARCH="x86_64"
-    LIBFFI_DIR="$REPO_DIR/libffi/Release-maccatalyst"
     # Use xcodebuild -showsdks to find out the available SDK name
     SYSROOT=`xcodebuild -version -sdk macosx Path`
     CMAKE_ARGS+=("-DCMAKE_OSX_SYSROOT=$SYSROOT");; # "-DCMAKE_C_FLAGS=-target x86_64-apple-ios14.1-macabi" "-DCMAKE_CXX_FLAGS=-target x86_64-apple-ios14.1-macabi");;
@@ -74,9 +72,9 @@ cd build
 # $DOWNLOADS/libffi/Release-iphoneos/include for FFI_INCLUDE_DIR
 # the platform-specific header would not be found! ;lld;libcxx;libcxxabi
 case $PLATFORM in
-  "iOS"|"iOS-Sim")
+  "iphoneos"|"iphonesimulator")
 	    cmake ${CMAKE_ARGS[@]} ../llvm;;
-  "macOS")
+  "maccatalyst")
         cmake ${CMAKE_ARGS[@]} -DCMAKE_C_FLAGS="-target x86_64-apple-ios14.1-macabi" -DCMAKE_CXX_FLAGS="-target x86_64-apple-ios14.1-macabi" ../llvm;;
 esac
 
