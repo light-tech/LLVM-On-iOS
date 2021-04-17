@@ -28,7 +28,7 @@ jobs:
     displayName: 'Publish LLVM XCFramework'
     enabled: true
 
-  - publish: $(System.DefaultWorkingDirectory)/LLVM-Clang-iOS.tar.xz
-    artifact: LLVM-Clang-iOS
+  - publish: $(System.DefaultWorkingDirectory)/Lib-Clang-iphoneos.tar.xz
+    artifact: Clang-Headers
     displayName: 'Publish LLVM Clang Headers'
-    enabled: false
+    enabled: true

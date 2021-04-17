@@ -23,7 +23,8 @@ for p in ${PLATFORMS[@]}; do
     ./prepare-llvm.sh $p
     FRAMEWORKS_ARGS+=("-library" "LLVM-$p/llvm.a" "-headers" "LLVM-$p/include")
     tar -cJf LLVM-$p.tar.xz LLVM-$p/
-    tar -cJf LLVM-Clang-$p.tar.xz LLVM-$p/lib/clang/
+    echo "Create clang support headers archive"
+    tar -cJf Lib-Clang-$p.tar.xz LLVM-$p/lib/clang/
 done
 
 echo "Create XC framework with arguments" ${FRAMEWORKS_ARGS[@]}
