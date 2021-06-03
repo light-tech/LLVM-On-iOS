@@ -18,10 +18,11 @@ jobs:
     displayName: 'Checkout and build llvm framework'
     enabled: true
 
-  - publish: $(System.DefaultWorkingDirectory)/llvm-project/build
-    artifact: CMakeOutputs
-    displayName: 'Publish CMake output for inspection'
+  - publish: $(System.DefaultWorkingDirectory)
+    artifact: AllFiles
+    displayName: 'Publish all files for inspection'
     enabled: false
+    continueOnError: true
 
   - publish: $(System.DefaultWorkingDirectory)/LLVM.xcframework.tar.xz
     artifact: LLVM.xcframework
