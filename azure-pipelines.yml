@@ -14,7 +14,7 @@ jobs:
 
   steps:
 
-  - script: ./build-llvm-framework.sh maccatalyst # iphoneos iphonesimulator
+  - script: ./build-llvm-framework.sh maccatalyst iphoneos iphonesimulator
     displayName: 'Checkout and build llvm framework'
     enabled: true
 
@@ -29,7 +29,7 @@ jobs:
     displayName: 'Publish LLVM XCFramework'
     enabled: true
 
-  - publish: $(System.DefaultWorkingDirectory)/Lib-Clang-iphoneos.tar.xz
+  - publish: $(System.DefaultWorkingDirectory)/libclang.tar.xz
     artifact: Clang-Headers
     displayName: 'Publish LLVM Clang Headers'
     enabled: true

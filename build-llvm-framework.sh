@@ -20,22 +20,22 @@ function build_libffi() {
 	local PLATFORM=$1
 	local LIBFFI_BUILD_DIR=$REPO_ROOT/libffi
 
+	echo "Build libffi for $PLATFORM"
+
 	cd $REPO_ROOT
 	test -d libffi || git clone https://github.com/libffi/libffi.git
 	cd libffi
 
 	case $PLATFORM in
-	  "iphoneos"|"iphonesimulator")
-		SDK_ARG=(-sdk $PLATFORM);;
+		"iphoneos"|"iphonesimulator")
+			SDK_ARG=(-sdk $PLATFORM);;
 
-	  "maccatalyst")
-		SDK="maccatalyst"
-		SDK_ARG=();;
-		# SDK_ARG=-sdk $SDK # Do not set SDK_ARG
+		"maccatalyst")
+			SDK_ARG=();; # Do not set SDK_ARG
 
-	  *)
-		echo "Unknown or missing platform!"
-		exit 1;;
+		*)
+			echo "Unknown or missing platform!"
+			exit 1;;
 	esac
 
 	# xcodebuild -list
@@ -48,7 +48,6 @@ function build_libffi() {
 
 # Build LLVM for a given iOS platform
 # Assumptions:
-#  * Run at this repo root
 #  * ninja was extracted at this repo root
 #  * LLVM is checked out inside this repo
 #  * libffi is either built or downloaded in relative location libffi/Release-*
@@ -58,8 +57,11 @@ function build_llvm() {
 	local LLVM_INSTALL_DIR=$REPO_ROOT/LLVM-$PLATFORM
 	local LIBFFI_INSTALL_DIR=$REPO_ROOT/libffi/Release-$PLATFORM
 
+	echo "Build llvm for $PLATFORM"
+
 	cd $REPO_ROOT
 	test -d llvm-project || git clone --single-branch --branch release/12.x https://github.com/llvm/llvm-project.git
+	# test -d llvm-project || wget https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/llvm-project-12.0.0.src.tar.xz && mv llvm-project-12.0.0.src.tar.xz llvm-project.tar.xz && tar xzf llvm-project.tar.xz
 	cd llvm-project
 	rm -rf build
 	mkdir build
@@ -68,56 +70,52 @@ function build_llvm() {
 	# https://opensource.com/article/18/5/you-dont-know-bash-intro-bash-arrays
 	# ;lld;libcxx;libcxxabi
 	local CMAKE_ARGS=(-G "Ninja" \
-	  -DLLVM_ENABLE_PROJECTS="clang" \
-	  -DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
-	  -DLLVM_BUILD_TOOLS=OFF \
-	  -DBUILD_SHARED_LIBS=OFF \
-	  -DLLVM_ENABLE_ZLIB=OFF \
-	  -DLLVM_ENABLE_THREADS=OFF \
-	  -DLLVM_ENABLE_UNWIND_TABLES=OFF \
-	  -DLLVM_ENABLE_EH=OFF \
-	  -DLLVM_ENABLE_RTTI=OFF \
-	  -DLLVM_ENABLE_TERMINFO=OFF \
-	  -DLLVM_ENABLE_FFI=ON \
-	  -DFFI_INCLUDE_DIR=$LIBFFI_INSTALL_DIR/include/ffi \
-	  -DFFI_LIBRARY_DIR=$LIBFFI_INSTALL_DIR \
-	  -DCMAKE_BUILD_TYPE=Release \
-	  -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_DIR \
-	  -DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake \
-	  -DCMAKE_MAKE_PROGRAM=$REPO_ROOT/ninja)
+		-DLLVM_ENABLE_PROJECTS="clang" \
+		-DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
+		-DLLVM_BUILD_TOOLS=OFF \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DLLVM_ENABLE_ZLIB=OFF \
+		-DLLVM_ENABLE_THREADS=OFF \
+		-DLLVM_ENABLE_UNWIND_TABLES=OFF \
+		-DLLVM_ENABLE_EH=OFF \
+		-DLLVM_ENABLE_RTTI=OFF \
+		-DLLVM_ENABLE_TERMINFO=OFF \
+		-DLLVM_ENABLE_FFI=ON \
+		-DFFI_INCLUDE_DIR=$LIBFFI_INSTALL_DIR/include/ffi \
+		-DFFI_LIBRARY_DIR=$LIBFFI_INSTALL_DIR \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_DIR \
+		-DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake \
+		-DCMAKE_MAKE_PROGRAM=$REPO_ROOT/ninja)
 
 	case $PLATFORM in
-	  "iphoneos")
-		echo "Build LLVM for iOS device"
-		ARCH="arm64"
-		CMAKE_ARGS+=("-DLLVM_TARGET_ARCH='$ARCH'");;
+		"iphoneos")
+			ARCH="arm64"
+			CMAKE_ARGS+=(-DLLVM_TARGET_ARCH=$ARCH);;
 
-	  "iphonesimulator")
-		echo "Build LLVM for iOS simulator"
-		ARCH="x86_64"
-		# Use xcodebuild -showsdks to find out the available SDK name
-		SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
-		CMAKE_ARGS+=("-DCMAKE_OSX_SYSROOT=$SYSROOT");;
+		"iphonesimulator")
+			ARCH="x86_64"
+			SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
+			CMAKE_ARGS+=(-DCMAKE_OSX_SYSROOT=$SYSROOT);;
 
-	  "maccatalyst")
-		echo "Build LLVM for MacOS"
-		ARCH="x86_64"
-		# Use xcodebuild -showsdks to find out the available SDK name
-		SYSROOT=`xcodebuild -version -sdk macosx Path`
-		CMAKE_ARGS+=("-DCMAKE_OSX_SYSROOT=$SYSROOT" -DCMAKE_C_FLAGS="-target x86_64-apple-ios14.1-macabi" -DCMAKE_CXX_FLAGS="-target x86_64-apple-ios14.1-macabi");;
+		"maccatalyst")
+			ARCH="x86_64"
+			SYSROOT=`xcodebuild -version -sdk macosx Path`
+			CMAKE_ARGS+=(-DCMAKE_OSX_SYSROOT=$SYSROOT \
+				-DCMAKE_C_FLAGS="-target x86_64-apple-ios14.1-macabi" \
+				-DCMAKE_CXX_FLAGS="-target x86_64-apple-ios14.1-macabi");;
 
-	  *)
-		echo "Unknown or missing platform!"
-		ARCH=x86_64
-		exit 1;;
+		*)
+			echo "Unknown or missing platform!"
+			ARCH=x86_64
+			exit 1;;
 	esac
 
-	CMAKE_ARGS+=("-DCMAKE_OSX_ARCHITECTURES='$ARCH'")
+	CMAKE_ARGS+=(-DCMAKE_OSX_ARCHITECTURES=$ARCH)
 
-	echo "Running CMake with " ${#CMAKE_ARGS[@]} "arguments"
-	for i in ${!CMAKE_ARGS[@]}; do
-		echo ${CMAKE_ARGS[$i]}
-	done
+	# https://www.shell-tips.com/bash/arrays/
+	# https://www.lukeshu.com/blog/bash-arrays.html
+	printf 'CMake Argument: %s\n' "${CMAKE_ARGS[@]}"
 
 	# Generate configuration for building for iOS Target (on MacOS Host)
 	# Note: AArch64 = arm64
@@ -169,16 +167,15 @@ function prepare_llvm() {
 
 FRAMEWORKS_ARGS=()
 for p in ${PLATFORMS[@]}; do
-    echo "Build LLVM for $p"
-    build_libffi $p
-    build_llvm $p
-    prepare_llvm $p
+	echo "Build LLVM XCFramework for $p"
+
+	build_libffi $p && build_llvm $p && prepare_llvm $p
 
 	cd $REPO_ROOT
-	FRAMEWORKS_ARGS+=("-library" "LLVM-$p/llvm.a" "-headers" "LLVM-$p/include")
-    tar -cJf LLVM-$p.tar.xz LLVM-$p/
-    echo "Create clang support headers archive"
-    tar -cJf Lib-Clang-$p.tar.xz LLVM-$p/lib/clang/
+	FRAMEWORKS_ARGS+=(-library LLVM-$p/llvm.a -headers LLVM-$p/include)
+	tar -cJf LLVM-$p.tar.xz LLVM-$p/
+	echo "Create clang support headers archive"
+	test -f libclang.tar.xz || tar -cJf libclang.tar.xz LLVM-$p/lib/clang/
 done
 
 echo "Create XC framework with arguments" ${FRAMEWORKS_ARGS[@]}
