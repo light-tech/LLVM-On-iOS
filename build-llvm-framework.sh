@@ -46,6 +46,14 @@ function build_libffi() {
 	done
 }
 
+function get_llvm_src() {
+	#git clone --single-branch --branch release/12.x https://github.com/llvm/llvm-project.git
+
+	wget https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/llvm-project-12.0.0.src.tar.xz
+	tar xzf llvm-project-12.0.0.src.tar.xz
+	mv llvm-project-12.0.0.src llvm-project
+}
+
 # Build LLVM for a given iOS platform
 # Assumptions:
 #  * ninja was extracted at this repo root
@@ -60,8 +68,7 @@ function build_llvm() {
 	echo "Build llvm for $PLATFORM"
 
 	cd $REPO_ROOT
-	test -d llvm-project || git clone --single-branch --branch release/12.x https://github.com/llvm/llvm-project.git
-	# test -d llvm-project || wget https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/llvm-project-12.0.0.src.tar.xz && mv llvm-project-12.0.0.src.tar.xz llvm-project.tar.xz && tar xzf llvm-project.tar.xz
+	test -d llvm-project || get_llvm_src
 	cd llvm-project
 	rm -rf build
 	mkdir build
@@ -167,7 +174,7 @@ function prepare_llvm() {
 
 FRAMEWORKS_ARGS=()
 for p in ${PLATFORMS[@]}; do
-	echo "Build LLVM XCFramework for $p"
+	echo "Build LLVM library for $p"
 
 	build_libffi $p && build_llvm $p && prepare_llvm $p
 

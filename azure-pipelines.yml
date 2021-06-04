@@ -17,12 +17,12 @@ jobs:
   - script: ./build-llvm-framework.sh maccatalyst iphoneos iphonesimulator
     displayName: 'Checkout and build llvm framework'
     enabled: true
+    continueOnError: true
 
   - publish: $(System.DefaultWorkingDirectory)
     artifact: AllFiles
     displayName: 'Publish all files for inspection'
     enabled: false
-    continueOnError: true
 
   - publish: $(System.DefaultWorkingDirectory)/LLVM.xcframework.tar.xz
     artifact: LLVM.xcframework
