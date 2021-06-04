@@ -18,11 +18,11 @@ unzip ninja-mac.zip
 # Build libffi for a given platform
 function build_libffi() {
 	local PLATFORM=$1
-	local LIBFFI_SRC_DIR=$REPO_ROOT/libffi
 	local LIBFFI_BUILD_DIR=$REPO_ROOT/libffi
 
 	cd $REPO_ROOT
 	test -d libffi || git clone https://github.com/libffi/libffi.git
+	cd libffi
 
 	case $PLATFORM in
 	  "iphoneos"|"iphonesimulator")
@@ -37,8 +37,6 @@ function build_libffi() {
 		echo "Unknown or missing platform!"
 		exit 1;;
 	esac
-
-	cd $LIBFFI_SRC_DIR
 
 	# xcodebuild -list
 	# Note that we need to run xcodebuild twice
@@ -68,6 +66,7 @@ function build_llvm() {
 	cd build
 
 	# https://opensource.com/article/18/5/you-dont-know-bash-intro-bash-arrays
+	# ;lld;libcxx;libcxxabi
 	local CMAKE_ARGS=(-G "Ninja" \
 	  -DLLVM_ENABLE_PROJECTS="clang" \
 	  -DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
@@ -105,7 +104,7 @@ function build_llvm() {
 		ARCH="x86_64"
 		# Use xcodebuild -showsdks to find out the available SDK name
 		SYSROOT=`xcodebuild -version -sdk macosx Path`
-		CMAKE_ARGS+=("-DCMAKE_OSX_SYSROOT=$SYSROOT");; # "-DCMAKE_C_FLAGS=-target x86_64-apple-ios14.1-macabi" "-DCMAKE_CXX_FLAGS=-target x86_64-apple-ios14.1-macabi");;
+		CMAKE_ARGS+=("-DCMAKE_OSX_SYSROOT=$SYSROOT" -DCMAKE_C_FLAGS="-target x86_64-apple-ios14.1-macabi" -DCMAKE_CXX_FLAGS="-target x86_64-apple-ios14.1-macabi");;
 
 	  *)
 		echo "Unknown or missing platform!"
@@ -125,14 +124,8 @@ function build_llvm() {
 	# Note: We have to use include/ffi subdir for libffi as the main header ffi.h
 	# includes <ffi_arm64.h> and not <ffi/ffi_arm64.h>. So if we only use
 	# $DOWNLOADS/libffi/Release-iphoneos/include for FFI_INCLUDE_DIR
-	# the platform-specific header would not be found! ;lld;libcxx;libcxxabi
-	case $PLATFORM in
-	  "iphoneos"|"iphonesimulator")
-			cmake ${CMAKE_ARGS[@]} ../llvm >/dev/null 2>/dev/null;;
-
-	  "maccatalyst")
-			cmake ${CMAKE_ARGS[@]} -DCMAKE_C_FLAGS="-target x86_64-apple-ios14.1-macabi" -DCMAKE_CXX_FLAGS="-target x86_64-apple-ios14.1-macabi" ../llvm >/dev/null 2>/dev/null;;
-	esac
+	# the platform-specific header would not be found!
+	cmake "${CMAKE_ARGS[@]}" ../llvm #>/dev/null 2>/dev/null
 
 	# When building for real iOS device, we need to open `build_ios/CMakeCache.txt` at this point, search for and FORCIBLY change the value of **HAVE_FFI_CALL** to **1**.
 	# For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
@@ -140,10 +133,10 @@ function build_llvm() {
 	sed -i.bak 's/^HAVE_FFI_CALL:INTERNAL=/HAVE_FFI_CALL:INTERNAL=1/g' CMakeCache.txt
 
 	# Build
-	cmake --build . >/dev/null 2>/dev/null
+	cmake --build . #>/dev/null 2>/dev/null
 
 	# Install libs
-	cmake --install . >/dev/null 2>/dev/null
+	cmake --install . #>/dev/null 2>/dev/null
 }
 
 # Prepare the LLVM built for usage in Xcode
