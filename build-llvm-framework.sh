@@ -7,12 +7,8 @@ PLATFORMS=( "$@" )
 export REPO_ROOT=`pwd`
 export PATH=$PATH:$REPO_ROOT/tools/bin
 
-# Download various tools such as autoconf, automake and libtool
-test -d tools || wget https://github.com/light-tech/LLVM-On-iOS/releases/download/llvm12.0.0/tools.tar.xz
-tar xzf tools.tar.xz
-
 # Download and extract ninja
-wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
+test -f ninja-mac.zip || wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
 unzip ninja-mac.zip
 
 # Build libffi for a given platform
