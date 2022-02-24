@@ -52,7 +52,7 @@ int main() {
 
     func interpretSampleProgram() {
         // Prepare a sample C++ source code file hello.cpp
-        let filePath = applicationSupportPath[0] + "hello.cpp"
+        let filePath = applicationSupportPath[0] + "/hello.cpp"
 
         FileManager.default.createFile(atPath: filePath,
                                        contents: program.data(using: .utf8)!,
