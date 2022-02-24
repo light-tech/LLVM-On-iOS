@@ -1,15 +1,15 @@
 # Build LLVM XCFramework
+#
 # The script arguments are the platforms to build
+#
+# We assume that all required build tools (CMake, ninja, etc.) are either installed and accessible in $PATH
+# or are available locally within this repo root at $REPO_ROOT/tools/bin (building on VSTS).
 
 PLATFORMS=( "$@" )
 
 # Constants
 export REPO_ROOT=`pwd`
 export PATH=$PATH:$REPO_ROOT/tools/bin
-
-# Download and extract ninja
-test -f ninja-mac.zip || wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
-unzip ninja-mac.zip
 
 # Build libffi for a given platform
 function build_libffi() {
