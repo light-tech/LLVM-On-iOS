@@ -65,12 +65,20 @@ Build LLVM for iOS
 
  * [Xcode](https://developer.apple.com/xcode/): Download from app store.
  * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to `$PATH`.
+ * [Ninja](https://ninja-build.org/): Download the [binary](https://github.com/ninja-build/ninja/releases) and add it to `$PATH`.
+ * Various GNU build tools (autoconf, automake and libtool): You can use our script `build-tools.sh` if you only want a local copy for building LLVM.
+
+Except for Xcode, the other items can be easily installed with Homebrew:
+```shell
+brew install cmake ninja autoconf automake libtool
+```
+but this is only possible if you own the machine.
 
 ### Build LLVM and co.
 
 Apple has introduced [XCFramework](https://developer.apple.com/videos/play/wwdc2019/416/) to allow packaging a library for multiple-platforms (iOS, Simulator, watchOS, macOS) and CPU architectures (x86_64, arm64) that could be easily added to a project.
 
-Our script [build-llvm-framework.sh](build-llvm-framework.sh) builds LLVM for several iOS platforms and packages it as an XCFramework so we do not have to switch out the libraries when we build the app for different targets (e.g. testing the app on real iPhone arm64 vs simulator x86_64).
+Our script [build-llvm-framework.sh](build-llvm-framework.sh) builds LLVM for several iOS platforms and packages it as an XCFramework so we do not have to switch out the libraries when we build the app for different targets (e.g. testing the app on real iPhone arm64 vs simulator x86_64). The script assumes the various tools aforementioned are installed and asccessible in `$PATH`.
 
 At this repo root:
 ```shell
