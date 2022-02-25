@@ -17,6 +17,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B76E87CC27C887770092565F /* azure-pipelines.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = "azure-pipelines.yml"; sourceTree = SOURCE_ROOT; };
+		B76E87CD27C887770092565F /* build-tools.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-tools.sh"; sourceTree = SOURCE_ROOT; };
+		B76E87CE27C887770092565F /* build-llvm-framework.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-llvm-framework.sh"; sourceTree = SOURCE_ROOT; };
+		B76E87CF27C887770092565F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		B7FA401A25EE377D00563EDC /* Sample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sample.entitlements; sourceTree = "<group>"; };
 		B7FA402225EE383900563EDC /* LLVM.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LLVM.xcframework; sourceTree = "<group>"; };
 		C639E811254517EF004DB533 /* Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -42,6 +46,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B76E87CB27C887560092565F /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				B76E87CC27C887770092565F /* azure-pipelines.yml */,
+				B76E87CE27C887770092565F /* build-llvm-framework.sh */,
+				B76E87CD27C887770092565F /* build-tools.sh */,
+				B76E87CF27C887770092565F /* README.md */,
+			);
+			name = Scripts;
+			sourceTree = "<group>";
+		};
 		B7FA402125EE383800563EDC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -70,6 +85,7 @@
 		C639E813254517EF004DB533 /* Sample */ = {
 			isa = PBXGroup;
 			children = (
+				B76E87CB27C887560092565F /* Scripts */,
 				B7FA401A25EE377D00563EDC /* Sample.entitlements */,
 				C639E84225451C0A004DB533 /* Interpreter.cpp */,
 				C639E84425451C0A004DB533 /* LLVMBridge.h */,
