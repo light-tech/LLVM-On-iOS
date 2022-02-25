@@ -68,7 +68,7 @@ Build LLVM for iOS
  * The common GNU tool [wget](https://www.gnu.org/software/wget/) (Optional): Unfortunately, pristine Mac installation does not come with this command line tool. You could
     - [Compile it from source](https://osxdaily.com/2012/05/22/install-wget-mac-os-x/)
     - Use Homebrew
-    - Skip this tool altogether and download the [LLVM source](https://github.com/llvm/llvm-project/releases/) yourself using a browser. (You need to get a file of the form `llvm-project-VERSION.src.tar.xz` that is about 100MB in size.)
+    - Skip this tool altogether and download the [LLVM source](https://github.com/llvm/llvm-project/releases/) yourself using a browser. (You need to get a file of the form `llvm-project-VERSION.src.tar.xz` that is about 100MB in size. Put it at this repo root.)
  * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to `$PATH`.
  * [Ninja](https://ninja-build.org/): Download the [binary](https://github.com/ninja-build/ninja/releases) and add it to `$PATH`.
  * Various GNU build tools [autoconf](https://www.gnu.org/software/autoconf/), [automake](https://www.gnu.org/software/automake/) and [libtool](https://www.gnu.org/software/libtool/): You can use our script `build-tools.sh` to create a local copy for building LLVM.
@@ -77,7 +77,8 @@ Except for Xcode, the other items can be easily installed with Homebrew:
 ```shell
 brew install wget cmake ninja autoconf automake libtool
 ```
-but this is only possible if you own the machine.
+
+_WARNING_: It has come to our attention that LLVM's CMake Build configuration have some dependency discovery that might be interfered by Homebrew. For example, LLVM depends on `libz` that is both supplied by Xcode and Homebrew. Since we are building for iOS, we really want the Xcode version of the library. But CMake can discover the Homebrew version and uses it instead! So you might want to build on a pristine machine. Don't get yourself **Homescrewed**<sup>TM</sup>!
 
 ### Build LLVM and co.
 
