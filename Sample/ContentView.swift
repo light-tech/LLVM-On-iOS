@@ -8,12 +8,16 @@
 import SwiftUI
 
 // Path to the app's ApplicationSupport directory where we will put a.k.a. hide our source code
-let applicationSupportPath = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true)
+let applicationSupportURL = try! FileManager.default.url(for: .applicationSupportDirectory,
+                                            in: .userDomainMask,
+                                            appropriateFor: nil,
+                                            create: true)
 
 // Global instance of LLVMBridge
 let llvm: LLVMBridge = LLVMBridge()
 
 struct ContentView: View {
+    @Environment(\.horizontalSizeClass) var sizeClass
 
     @State var program: String = """
 extern "C" void printf(const char* fmt, ...);
@@ -29,38 +33,55 @@ int main() {
 
     @State var compilationOutput: String = ""
     @State var programOutput: String = ""
-    @State var selectedView = 0
 
     var body: some View {
-        TabView(selection: $selectedView) {
-            VStack {
-                Button("Interpret Sample Program", action: interpretSampleProgram)
-                TextEditor(text: $program)
-            }.tabItem {
+        if (sizeClass == .compact) {
+            TabView {
+                VStack {
+                    Button("Interpret Sample Program", action: interpretSampleProgram)
+                    TextEditor(text: $program)
+                }.tabItem {
                     Image(systemName: "doc.plaintext")
                     Text("Source code")
-                }.tag(0)
-            VStack {
-                Text(compilationOutput)
-                Text(programOutput)
-            }.tabItem {
+                }
+
+                VStack {
+                    Text(compilationOutput)
+                    Divider()
+                    Text(programOutput)
+                }.tabItem {
                     Image(systemName: "greaterthan.square")
                     Text("Output")
-                }.tag(1)
+                }
+            }
+        } else {
+            VStack {
+                Button("Interpret Sample Program", action: interpretSampleProgram)
+                    .padding()
+                HStack {
+                    TextEditor(text: $program)
+                    Divider()
+                    VStack {
+                        Text(compilationOutput)
+                        Divider()
+                        Text(programOutput)
+                    }
+                }
+            }
         }
     }
 
     func interpretSampleProgram() {
         // Prepare a sample C++ source code file hello.cpp
-        let filePath = applicationSupportPath[0] + "/hello.cpp"
+        let filePath = applicationSupportURL.appendingPathComponent("hello.cpp")
 
-        FileManager.default.createFile(atPath: filePath,
+        FileManager.default.createFile(atPath: filePath.path,
                                        contents: program.data(using: .utf8)!,
                                        attributes: nil)
 
         // Compile and interpret the program
         print("Interpret sample program at ", filePath)
-        let output = llvm.interpretProgram(filePath.data(using: .utf8)!)
+        let output = llvm.interpretProgram(filePath.path.data(using: .utf8)!)
         compilationOutput = output.compilationOutput!
         programOutput = output.programOutput!
     }
