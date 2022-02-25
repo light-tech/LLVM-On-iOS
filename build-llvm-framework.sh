@@ -42,11 +42,11 @@ function build_libffi() {
 }
 
 function get_llvm_src() {
-	#git clone --single-branch --branch release/12.x https://github.com/llvm/llvm-project.git
+	#git clone --single-branch --branch release/13.x https://github.com/llvm/llvm-project.git
 
-	wget https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/llvm-project-12.0.0.src.tar.xz
-	tar xzf llvm-project-12.0.0.src.tar.xz
-	mv llvm-project-12.0.0.src llvm-project
+	wget https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/llvm-project-13.0.1.src.tar.xz
+	tar xzf llvm-project-13.0.1.src.tar.xz
+	mv llvm-project-13.0.1.src llvm-project
 }
 
 # Build LLVM for a given iOS platform
