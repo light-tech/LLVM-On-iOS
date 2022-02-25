@@ -9,7 +9,6 @@ PLATFORMS=( "$@" )
 
 # Constants
 export REPO_ROOT=`pwd`
-export PATH=$PATH:$REPO_ROOT/tools/bin
 
 # Build libffi for a given platform
 function build_libffi() {
@@ -88,8 +87,7 @@ function build_llvm() {
 		-DFFI_LIBRARY_DIR=$LIBFFI_INSTALL_DIR \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_DIR \
-		-DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake \
-		-DCMAKE_MAKE_PROGRAM=$REPO_ROOT/ninja)
+		-DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake)
 
 	case $PLATFORM in
 		"iphoneos")
