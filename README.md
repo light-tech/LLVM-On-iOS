@@ -64,13 +64,18 @@ Build LLVM for iOS
 ### The tools we needs
 
  * [Xcode](https://developer.apple.com/xcode/): Download from app store.
+    - Note that we need the Xcode command line tools as well.
+ * The common GNU tool [wget](https://www.gnu.org/software/wget/) (Optional): Unfortunately, pristine Mac installation does not come with this command line tool. You could
+    - [Compile it from source](https://osxdaily.com/2012/05/22/install-wget-mac-os-x/)
+    - Use Homebrew
+    - Skip this tool altogether and download the [LLVM source](https://github.com/llvm/llvm-project/releases/) yourself using a browser. (You need to get a file of the form `llvm-project-VERSION.src.tar.xz` that is about 100MB in size.)
  * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to `$PATH`.
  * [Ninja](https://ninja-build.org/): Download the [binary](https://github.com/ninja-build/ninja/releases) and add it to `$PATH`.
- * Various GNU build tools (autoconf, automake and libtool): You can use our script `build-tools.sh` if you only want a local copy for building LLVM.
+ * Various GNU build tools [autoconf](https://www.gnu.org/software/autoconf/), [automake](https://www.gnu.org/software/automake/) and [libtool](https://www.gnu.org/software/libtool/): You can use our script `build-tools.sh` to create a local copy for building LLVM.
 
 Except for Xcode, the other items can be easily installed with Homebrew:
 ```shell
-brew install cmake ninja autoconf automake libtool
+brew install wget cmake ninja autoconf automake libtool
 ```
 but this is only possible if you own the machine.
 
