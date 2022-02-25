@@ -26,7 +26,7 @@ llvm::raw_ostream &errorOutputStream
 ```
 to `clangInterpret` and replace all `llvm::errs()` with `errorOutputStream` so we can capture the compilation output and pass it back to the app front-end to display to the user.
 
-4. **For real iOS device**: The implementation of [`llvm::sys::getProcessTriple()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/Support/Host.cpp) is currently bogus according to the implementation of [`JITTargetMachineBuilder::detectHost()`](https://github.com/llvm/llvm-project/blob/master/llvm/lib/ExecutionEngine/Orc/JITTargetMachineBuilder.cpp).
+4. **For real iOS device**: The implementation of [`llvm::sys::getProcessTriple()`](https://github.com/llvm/llvm-project/blob/main/llvm/lib/Support/Host.cpp) is currently bogus according to the implementation of [`JITTargetMachineBuilder::detectHost()`](https://github.com/llvm/llvm-project/blob/main/llvm/lib/ExecutionEngine/Orc/JITTargetMachineBuilder.cpp).
 So we need to add the appropriate conditional compilation directive `#ifdef __aarch64__ ... #else ... #endif` to give it the correct triple.
 
 In the latest version, you should be able to edit the program, interpret it and see the output in the app UI.
