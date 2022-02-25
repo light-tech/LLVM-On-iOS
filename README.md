@@ -6,7 +6,7 @@ The goal of this project is to illustrate how to use LLVM + Clang to provide an 
 ![Edit the program screenshot](Screenshots/Screenshot1.png)
 ![Interpret the program screenshot](Screenshots/Screenshot2.png)
 
-For the eager reader, we provide a sample iOS app project in the [Sample/](Sample) folder which has **NO license attached** so feel free to do whatever you want with it.
+For the eager reader, we provide a sample iOS app project which has **NO license attached** so feel free to do whatever you want with it.
 In this app, we use Clang's C interpreter example located in `examples/clang-interpreter/main.cpp` of Clang source code to _interpret a simple C++ program_ and _print out the output on the iOS app's user interface_.
 (The file was renamed to `Interpreter.cpp` to fit in with iOS development style.)
 The code is pretty much copied verbatim except for some minor modifications, namely:
@@ -34,11 +34,11 @@ In the latest version, you should be able to edit the program, interpret it and 
 ### Preparations
 
 Before building the project, you need to either
-1. compile LLVM (see instructions down below) and copy the `LLVM.xcframework` to Sample project; or
+1. compile LLVM (see instructions down below); or
 2. download our prebuilt XCFramework (the file named `LLVM.xcframework.tar.xz`) from our [releases](https://github.com/light-tech/LLVM-On-iOS/releases),
-then `cd` to the `Sample` project folder and do
+then `cd` to the repo folder and do
 ```shell
-tar -xzf PATH_TO_DOWNLOADED_TAR_XZ # e.g. ~/Downloads/LLVM.xcframework.tar.xz
+tar -xzf PATH_TO_DOWNLOADED_TAR_XZ             # e.g. ~/Downloads/LLVM.xcframework.tar.xz
 ```
 
 ### Known Limitations
