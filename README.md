@@ -57,6 +57,8 @@ If there is compilation error, the error message was printed out instead of cras
 
 To make the app work on real iPhone _untethered from Xcode_, one possibility is to use compilation into binary, somehow sign it and use [system()](https://stackoverflow.com/questions/32439095/how-to-execute-a-command-line-in-iphone).
 Another possibility would be to use the slower LLVM bytecode interpreter instead of ORC JIT that the example was doing, as many [existing terminal apps](https://opensource.com/article/20/9/run-linux-ios) illustrated.
+Also, check out [L* C++](https://apps.apple.com/us/app/l-c/id1562808282) on the App Store.
+I recommend reading [LLVM Programmer's Manual](https://llvm.org/docs/ProgrammersManual.html) before using LLVM API.
 
 Build LLVM for iOS
 ------------------
