@@ -52,7 +52,7 @@ namespace orc {
 
 class SimpleJIT {
 private:
-  ExecutionSession ES;
+  ExecutionSession ES { std::move(*SelfExecutorProcessControl::Create()) };
   std::unique_ptr<TargetMachine> TM;
   const DataLayout DL;
   MangleAndInterner Mangle{ES, DL};
