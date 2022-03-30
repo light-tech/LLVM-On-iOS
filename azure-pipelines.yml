@@ -10,7 +10,7 @@ jobs:
 - job: BuildLLVMJob
   timeoutInMinutes: 0
   pool:
-    vmImage: macOS-10.15
+    vmImage: macOS-latest
 
   steps:
 
