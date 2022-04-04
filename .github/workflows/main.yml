@@ -3,6 +3,7 @@ on: [push]
 jobs:
   build-llvm-xcframework:
     runs-on: macos-latest
+    timeout-minutes: 1200
     steps:
       - uses: actions/checkout@v3
       - run: ./build-tools.sh
@@ -20,4 +21,3 @@ jobs:
         with:
           name: libclang
           path: libclang.tar.xz
-

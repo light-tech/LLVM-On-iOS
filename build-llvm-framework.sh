@@ -124,7 +124,7 @@ function build_llvm() {
 	# includes <ffi_arm64.h> and not <ffi/ffi_arm64.h>. So if we only use
 	# $DOWNLOADS/libffi/Release-iphoneos/include for FFI_INCLUDE_DIR
 	# the platform-specific header would not be found!
-	cmake "${CMAKE_ARGS[@]}" ../llvm #>/dev/null 2>/dev/null
+	cmake "${CMAKE_ARGS[@]}" ../llvm >/dev/null 2>/dev/null
 
 	# When building for real iOS device, we need to open `build_ios/CMakeCache.txt` at this point, search for and FORCIBLY change the value of **HAVE_FFI_CALL** to **1**.
 	# For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
@@ -132,10 +132,10 @@ function build_llvm() {
 	sed -i.bak 's/^HAVE_FFI_CALL:INTERNAL=/HAVE_FFI_CALL:INTERNAL=1/g' CMakeCache.txt
 
 	# Build
-	cmake --build . #>/dev/null 2>/dev/null
+	cmake --build . >/dev/null 2>/dev/null
 
 	# Install libs
-	cmake --install . #>/dev/null 2>/dev/null
+	cmake --install . >/dev/null 2>/dev/null
 }
 
 # Prepare the LLVM built for usage in Xcode
