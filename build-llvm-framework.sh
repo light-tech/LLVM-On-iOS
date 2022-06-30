@@ -7,6 +7,16 @@
 
 PLATFORMS=( "$@" )
 
+# List of platforms-architecture that we support
+# Note that there are limitations in `xcodebuild` command that disallows `maccatalyst` and `macosx` (native macOS lib) in the same xcframework.
+AVAILABLE_PLATFORMS=(iphoneos iphonesimulator iphonesimulator-arm64 maccatalyst maccatalyst-arm64) # macosx macosx-arm64
+
+# List of frameworks included in the XCFramework (= AVAILABLE_PLATFORMS without architecture specifications)
+XCFRAMEWORK_PLATFORMS=(iphoneos iphonesimulator maccatalyst)
+
+# List of platforms that need to be merged using lipo due to presence of multiple architectures
+LIPO_PLATFORMS=(iphonesimulator maccatalyst)
+
 # Constants
 export REPO_ROOT=`pwd`
 
@@ -22,11 +32,14 @@ function build_libffi() {
 	cd libffi
 
 	case $PLATFORM in
-		"iphoneos"|"iphonesimulator")
+		"iphoneos")
 			SDK_ARG=(-sdk $PLATFORM);;
 
+		"iphonesimulator")
+			SDK_ARG=(-sdk $PLATFORM -arch arm64 -arch x86_64);;
+
 		"maccatalyst")
-			SDK_ARG=();; # Do not set SDK_ARG
+			SDK_ARG=(-arch arm64 -arch x86_64);; # Do not set SDK_ARG
 
 		*)
 			echo "Unknown or missing platform!"
@@ -39,6 +52,8 @@ function build_libffi() {
 	for r in {1..2}; do
 		xcodebuild -scheme libffi-iOS ${SDK_ARG[@]} -configuration Release SYMROOT="$LIBFFI_BUILD_DIR" >/dev/null 2>/dev/null
 	done
+
+    lipo -info $REPO_ROOT/libffi/Release-$PLATFORM/libffi.a
 }
 
 function get_llvm_src() {
@@ -166,19 +181,23 @@ function prepare_llvm() {
 	rm -rf lib/*.a
 }
 
-FRAMEWORKS_ARGS=()
-for p in ${PLATFORMS[@]}; do
-	echo "Build LLVM library for $p"
-
-	build_libffi $p && build_llvm $p && prepare_llvm $p
-
-	cd $REPO_ROOT
-	FRAMEWORKS_ARGS+=(-library LLVM-$p/llvm.a -headers LLVM-$p/include)
-	tar -cJf LLVM-$p.tar.xz LLVM-$p/
-	echo "Create clang support headers archive"
-	test -f libclang.tar.xz || tar -cJf libclang.tar.xz LLVM-$p/lib/clang/
+for p in ${XCFRAMEWORK_PLATFORMS[@]}; do
+    build_libffi $p
 done
 
-echo "Create XC framework with arguments" ${FRAMEWORKS_ARGS[@]}
-xcodebuild -create-xcframework ${FRAMEWORKS_ARGS[@]} -output LLVM.xcframework
-tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
+#FRAMEWORKS_ARGS=()
+#for p in ${PLATFORMS[@]}; do
+#	echo "Build LLVM library for $p"
+
+#	build_libffi $p && build_llvm $p && prepare_llvm $p
+
+#	cd $REPO_ROOT
+#	FRAMEWORKS_ARGS+=(-library LLVM-$p/llvm.a -headers LLVM-$p/include)
+#	tar -cJf LLVM-$p.tar.xz LLVM-$p/
+#	echo "Create clang support headers archive"
+#	test -f libclang.tar.xz || tar -cJf libclang.tar.xz LLVM-$p/lib/clang/
+#done
+
+#echo "Create XC framework with arguments" ${FRAMEWORKS_ARGS[@]}
+#xcodebuild -create-xcframework ${FRAMEWORKS_ARGS[@]} -output LLVM.xcframework
+#tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
