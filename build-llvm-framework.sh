@@ -8,10 +8,11 @@
 PLATFORMS=( "$@" )
 
 # List of platforms-architecture that we support
-# Note that there are limitations in `xcodebuild` command that disallows `maccatalyst` and `macosx` (native macOS lib) in the same xcframework.
-AVAILABLE_PLATFORMS=(iphoneos iphonesimulator iphonesimulator-arm64 maccatalyst maccatalyst-arm64) # macosx macosx-arm64
+# iphoneos iphonesimulator maccatalyst
+AVAILABLE_PLATFORMS=(iphoneos iphonesimulator-arm64 maccatalyst-arm64)
 
 # List of frameworks included in the XCFramework (= AVAILABLE_PLATFORMS without architecture specifications)
+# iphoneos
 XCFRAMEWORK_PLATFORMS=(iphoneos iphonesimulator maccatalyst)
 
 # List of platforms that need to be merged using lipo due to presence of multiple architectures
@@ -20,9 +21,43 @@ LIPO_PLATFORMS=(iphonesimulator maccatalyst)
 # Constants
 export REPO_ROOT=`pwd`
 
+### Setup $BASE_PLATFORM, $ARCH and $LIBFFI_INSTALL_DIR from platform-architecture string
+function setup_variables() {
+	local PLATFORM_ARCH=$1
+
+	case $PLATFORM_ARCH in
+		"iphoneos")
+			ARCH="arm64"
+			BASE_PLATFORM=$PLATFORM_ARCH;;
+
+		"iphonesimulator")
+			ARCH="x86_64"
+			BASE_PLATFORM="iphonesimulator";;
+
+		"iphonesimulator-arm64")
+			ARCH="arm64"
+			BASE_PLATFORM="iphonesimulator";;
+
+		"maccatalyst")
+			ARCH="x86_64"
+			BASE_PLATFORM="maccatalyst";;
+
+		"maccatalyst-arm64")
+			ARCH="arm64"
+			BASE_PLATFORM="maccatalyst";;
+
+		*)
+			echo "Unknown or missing platform!"
+			exit 1;;
+	esac
+
+	LIBFFI_INSTALL_DIR=$REPO_ROOT/libffi/Release-$BASE_PLATFORM
+}
+
 # Build libffi for a given platform
 function build_libffi() {
 	local PLATFORM=$1
+	setup_variables $PLATFORM
 	local LIBFFI_BUILD_DIR=$REPO_ROOT/libffi
 
 	echo "Build libffi for $PLATFORM"
@@ -33,13 +68,13 @@ function build_libffi() {
 
 	case $PLATFORM in
 		"iphoneos")
-			SDK_ARG=(-sdk $PLATFORM);;
+			SDK_ARG=(-sdk $BASE_PLATFORM);;
 
-		"iphonesimulator")
-			SDK_ARG=(-sdk $PLATFORM -arch arm64 -arch x86_64);;
+		"iphonesimulator"|"iphonesimulator-arm64")
+			SDK_ARG=(-sdk $BASE_PLATFORM -arch $ARCH);;
 
-		"maccatalyst")
-			SDK_ARG=(-arch arm64 -arch x86_64);; # Do not set SDK_ARG
+		"maccatalyst"|"maccatalyst-arm64")
+			SDK_ARG=(-arch $ARCH);; # Do not set SDK_ARG
 
 		*)
 			echo "Unknown or missing platform!"
@@ -53,7 +88,7 @@ function build_libffi() {
 		xcodebuild -scheme libffi-iOS ${SDK_ARG[@]} -configuration Release SYMROOT="$LIBFFI_BUILD_DIR" >/dev/null 2>/dev/null
 	done
 
-    lipo -info $REPO_ROOT/libffi/Release-$PLATFORM/libffi.a
+	lipo -info $LIBFFI_INSTALL_DIR/libffi.a
 }
 
 function get_llvm_src() {
@@ -73,7 +108,7 @@ function build_llvm() {
 	local PLATFORM=$1
 	local LLVM_DIR=$REPO_ROOT/llvm-project
 	local LLVM_INSTALL_DIR=$REPO_ROOT/LLVM-$PLATFORM
-	local LIBFFI_INSTALL_DIR=$REPO_ROOT/libffi/Release-$PLATFORM
+	setup_variables $PLATFORM
 
 	echo "Build llvm for $PLATFORM"
 
@@ -106,24 +141,20 @@ function build_llvm() {
 
 	case $PLATFORM in
 		"iphoneos")
-			ARCH="arm64"
 			CMAKE_ARGS+=(-DLLVM_TARGET_ARCH=$ARCH);;
 
-		"iphonesimulator")
-			ARCH="x86_64"
+		"iphonesimulator"|"iphonesimulator-arm64")
 			SYSROOT=`xcodebuild -version -sdk iphonesimulator Path`
 			CMAKE_ARGS+=(-DCMAKE_OSX_SYSROOT=$SYSROOT);;
 
-		"maccatalyst")
-			ARCH="x86_64"
+		"maccatalyst"|"maccatalyst-arm64")
 			SYSROOT=`xcodebuild -version -sdk macosx Path`
 			CMAKE_ARGS+=(-DCMAKE_OSX_SYSROOT=$SYSROOT \
-				-DCMAKE_C_FLAGS="-target x86_64-apple-ios14.1-macabi" \
-				-DCMAKE_CXX_FLAGS="-target x86_64-apple-ios14.1-macabi");;
+				-DCMAKE_C_FLAGS="-target $ARCH-apple-ios14.1-macabi" \
+				-DCMAKE_CXX_FLAGS="-target $ARCH-apple-ios14.1-macabi");;
 
 		*)
 			echo "Unknown or missing platform!"
-			ARCH=x86_64
 			exit 1;;
 	esac
 
@@ -156,8 +187,8 @@ function build_llvm() {
 # Prepare the LLVM built for usage in Xcode
 function prepare_llvm() {
 	local PLATFORM=$1
-	local LIBFFI_BUILD_DIR=$REPO_ROOT/libffi/Release-$PLATFORM
 
+	echo "Prepare LLVM for $PLATFORM"
 	cd $REPO_ROOT/LLVM-$PLATFORM
 
 	# Remove unnecessary executables and support files
@@ -171,8 +202,8 @@ function prepare_llvm() {
 	rm -rf lib2 # Comment this if you want to keep
 
 	# Copy libffi
-	cp -r $LIBFFI_BUILD_DIR/include/ffi ./include/
-	cp $LIBFFI_BUILD_DIR/libffi.a ./lib/
+	cp -r $LIBFFI_INSTALL_DIR/include/ffi ./include/
+	cp $LIBFFI_INSTALL_DIR/libffi.a ./lib/
 
 	# Combine all *.a into a single llvm.a for ease of use
 	libtool -static -o llvm.a lib/*.a
@@ -181,23 +212,51 @@ function prepare_llvm() {
 	rm -rf lib/*.a
 }
 
-for p in ${XCFRAMEWORK_PLATFORMS[@]}; do
-    build_libffi $p
+# Merge the LLVM.a for iphonesimulator & iphonesimulator-arm64 as well as maccatalyst & maccatalyst-arm64 using lipo
+# Input: Base platform (iphonesimulator or maccatalyst)
+function merge_archs() {
+	local BASE_PLATFORM=$1
+	cd $REPO_ROOT
+	if [ -d LLVM-$BASE_PLATFORM ]
+	then
+		if [ -d LLVM-$BASE_PLATFORM-arm64 ]
+		then
+			echo "Merge arm64 and x86_64 LLVM.a ($BASE_PLATFORM)"
+			cd LLVM-$BASE_PLATFORM
+			lipo llvm.a ../LLVM-$BASE_PLATFORM-arm64/llvm.a -output llvm_all_archs.a -create
+			test -f llvm_all_archs.a && rm llvm.a && mv llvm_all_archs.a llvm.a
+			file llvm.a
+		fi
+	else
+		if [ -d LLVM-$BASE_PLATFORM-arm64 ]
+		then
+			echo "Rename LLVM-$BASE_PLATFORM-arm64 to LLVM-$BASE_PLATFORM"
+			mv LLVM-$BASE_PLATFORM-arm64 LLVM-$BASE_PLATFORM
+		fi
+	fi
+}
+
+for p in ${AVAILABLE_PLATFORMS[@]}; do
+	echo "Build LLVM library for $p"
+
+	build_libffi $p && build_llvm $p && prepare_llvm $p
+
+	#cd $REPO_ROOT
+	#tar -cJf LLVM-$p.tar.xz LLVM-$p/
+	#echo "Create clang support headers archive"
+	#test -f libclang.tar.xz || tar -cJf libclang.tar.xz LLVM-$p/lib/clang/
 done
 
-#FRAMEWORKS_ARGS=()
-#for p in ${PLATFORMS[@]}; do
-#	echo "Build LLVM library for $p"
+for p in ${LIPO_PLATFORMS[@]}; do
+	merge_archs $p
+done
 
-#	build_libffi $p && build_llvm $p && prepare_llvm $p
+FRAMEWORKS_ARGS=()
+for p in ${XCFRAMEWORK_PLATFORMS[@]}; do
+	FRAMEWORKS_ARGS+=(-library LLVM-$p/llvm.a -headers LLVM-$p/include)
+done
 
-#	cd $REPO_ROOT
-#	FRAMEWORKS_ARGS+=(-library LLVM-$p/llvm.a -headers LLVM-$p/include)
-#	tar -cJf LLVM-$p.tar.xz LLVM-$p/
-#	echo "Create clang support headers archive"
-#	test -f libclang.tar.xz || tar -cJf libclang.tar.xz LLVM-$p/lib/clang/
-#done
-
-#echo "Create XC framework with arguments" ${FRAMEWORKS_ARGS[@]}
-#xcodebuild -create-xcframework ${FRAMEWORKS_ARGS[@]} -output LLVM.xcframework
-#tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
+echo "Create XC framework with arguments" ${FRAMEWORKS_ARGS[@]}
+cd $REPO_ROOT
+xcodebuild -create-xcframework ${FRAMEWORKS_ARGS[@]} -output LLVM.xcframework
+tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
