@@ -5,11 +5,11 @@
 # We assume that all required build tools (CMake, ninja, etc.) are either installed and accessible in $PATH
 # or are available locally within this repo root at $REPO_ROOT/tools/bin (building on VSTS).
 
-PLATFORMS=( "$@" )
+PLATFORMS_TO_BUILD=( "$@" )
 
 # List of platforms-architecture that we support
 # iphoneos iphonesimulator maccatalyst
-AVAILABLE_PLATFORMS=(iphoneos iphonesimulator-arm64 maccatalyst-arm64)
+# AVAILABLE_PLATFORMS=(iphoneos iphonesimulator-arm64 maccatalyst-arm64)
 
 # List of frameworks included in the XCFramework (= AVAILABLE_PLATFORMS without architecture specifications)
 # iphoneos
@@ -236,15 +236,15 @@ function merge_archs() {
 	fi
 }
 
-for p in ${AVAILABLE_PLATFORMS[@]}; do
+for p in ${PLATFORMS_TO_BUILD[@]}; do
 	echo "Build LLVM library for $p"
 
 	build_libffi $p && build_llvm $p && prepare_llvm $p
 
-	#cd $REPO_ROOT
+	cd $REPO_ROOT
 	#tar -cJf LLVM-$p.tar.xz LLVM-$p/
-	#echo "Create clang support headers archive"
-	#test -f libclang.tar.xz || tar -cJf libclang.tar.xz LLVM-$p/lib/clang/
+	echo "Create clang support headers archive"
+	test -f libclang.tar.xz || tar -cJf libclang.tar.xz LLVM-$p/lib/clang/
 done
 
 for p in ${LIPO_PLATFORMS[@]}; do

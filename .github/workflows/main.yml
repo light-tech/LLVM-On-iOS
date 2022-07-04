@@ -21,3 +21,19 @@ jobs:
         with:
           name: libclang
           path: libclang.tar.xz
+  build-llvm-xcframework-m1:
+    runs-on: macos-latest
+    timeout-minutes: 1200
+    steps:
+      - uses: actions/checkout@v3
+      - run: ./build-tools.sh
+      - run: |
+          wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
+          unzip ninja-mac.zip
+          mv ninja tools/bin
+          export PATH=$PATH:`pwd`/tools/bin
+          ./build-llvm-framework.sh iphoneos maccatalyst-arm64 iphonesimulator-arm64
+      - uses: actions/upload-artifact@v3
+        with:
+          name: LLVM1.xcframework
+          path: LLVM.xcframework.tar.xz
