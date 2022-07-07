@@ -86,14 +86,16 @@ _WARNING_: It has come to our attention that LLVM's CMake Build configuration ha
 
 Apple has introduced [XCFramework](https://developer.apple.com/videos/play/wwdc2019/416/) to allow packaging a library for multiple-platforms (iOS, Simulator, watchOS, macOS) and CPU architectures (x86_64, arm64) that could be easily added to a project.
 
-Our script [build-llvm-framework.sh](build-llvm-framework.sh) builds LLVM for several iOS platforms and packages it as an XCFramework so we do not have to switch out the libraries when we build the app for different targets (e.g. testing the app on real iPhone arm64 vs simulator x86_64). The script assumes the various tools aforementioned are installed and asccessible in `$PATH`.
+Our script [build-llvm.sh](build-llvm.sh) builds LLVM for several iOS platforms and  [create-xcframework.sh](create-xcframework.sh) packages it as an XCFramework so we do not have to switch out the libraries when we build the app for different targets (e.g. testing the app on real iPhone arm64 vs simulator x86_64). The script assumes the various tools aforementioned are installed and asccessible in `$PATH`.
 
 At this repo root:
 ```shell
-./build-llvm-framework.sh iphoneos iphonesimulator maccatalyst
+./build-llvm.sh iphoneos iphonesimulator maccatalyst iphonesimulator-arm64 maccatalyst-arm64
+./create-xcframework.sh
 ```
+(If you are building for use in your own development machine, you can skip some platforms that you do not need. For example, an M1 Macs can skip on `iphonesimulator maccatalyst` as those are meant for Intel Macs.)
 
-We can now build the library on an [Azure DevOps](https://lightech.visualstudio.com/LLVM/_build) pipeline.
+Our prebuilt release are built with [GitHub Actions](https://github.com/light-tech/LLVM-On-iOS/actions).
 
 Behind the Scene
 ----------------
