@@ -5,13 +5,13 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        platformArch: [iphoneos, iphonesimulator, iphonesimulator-arm64, maccatalyst, maccatalyst-arm64]
+        platformArch: [iphoneos, iphonesimulator] # maccatalyst, iphonesimulator-arm64, maccatalyst-arm64
     timeout-minutes: 1200
     steps:
       - uses: actions/checkout@v3
       - run: ./build-tools.sh
       - run: |
-          wget https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
+          curl -OL https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
           unzip ninja-mac.zip
           mv ninja tools/bin
           export PATH=$PATH:`pwd`/tools/bin
@@ -20,15 +20,15 @@ jobs:
         with:
           name: LLVM-${{ matrix.platformArch }}
           path: LLVM-${{ matrix.platformArch }}/
+
   create-xcframework:
     needs: build-llvm
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
-      - run: |
-          echo `pwd`
-          ./create-xcframework.sh
+      - run: ./create-xcframework.sh
+      - run: tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
       - uses: actions/upload-artifact@v3
         with:
           name: LLVM.xcframework

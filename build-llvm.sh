@@ -87,9 +87,9 @@ function build_libffi() {
 function get_llvm_src() {
 	#git clone --single-branch --branch release/14.x https://github.com/llvm/llvm-project.git
 
-	wget https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.0/llvm-project-14.0.0.src.tar.xz
-	tar xzf llvm-project-14.0.0.src.tar.xz
-	mv llvm-project-14.0.0.src llvm-project
+	curl -OL https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.3/llvm-project-15.0.3.src.tar.xz
+	tar xzf llvm-project-15.0.3.src.tar.xz
+	mv llvm-project-15.0.3.src llvm-project
 }
 
 # Build LLVM for a given iOS platform
@@ -118,8 +118,10 @@ function build_llvm() {
 		-DLLVM_ENABLE_PROJECTS="clang" \
 		-DLLVM_TARGETS_TO_BUILD="AArch64;X86" \
 		-DLLVM_BUILD_TOOLS=OFF \
+		-DCLANG_BUILD_TOOLS=OFF \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DLLVM_ENABLE_ZLIB=OFF \
+		-DLLVM_ENABLE_ZSTD=OFF \
 		-DLLVM_ENABLE_THREADS=OFF \
 		-DLLVM_ENABLE_UNWIND_TABLES=OFF \
 		-DLLVM_ENABLE_EH=OFF \
@@ -163,18 +165,15 @@ function build_llvm() {
 	# includes <ffi_arm64.h> and not <ffi/ffi_arm64.h>. So if we only use
 	# $DOWNLOADS/libffi/Release-iphoneos/include for FFI_INCLUDE_DIR
 	# the platform-specific header would not be found!
-	cmake "${CMAKE_ARGS[@]}" ../llvm >/dev/null 2>/dev/null
+	cmake "${CMAKE_ARGS[@]}" ../llvm || exit -1 # >/dev/null 2>/dev/null
 
 	# When building for real iOS device, we need to open `build_ios/CMakeCache.txt` at this point, search for and FORCIBLY change the value of **HAVE_FFI_CALL** to **1**.
 	# For some reason, CMake did not manage to determine that `ffi_call` was available even though it really is the case.
 	# Without this, the execution engine is not built with libffi at all.
 	sed -i.bak 's/^HAVE_FFI_CALL:INTERNAL=/HAVE_FFI_CALL:INTERNAL=1/g' CMakeCache.txt
 
-	# Build
-	cmake --build . >/dev/null 2>/dev/null
-
-	# Install libs
-	cmake --install . >/dev/null 2>/dev/null
+	# Build and install
+	cmake --build . --target install # >/dev/null 2>/dev/null
 }
 
 # Prepare the LLVM built for usage in Xcode
@@ -210,5 +209,4 @@ for p in ${PLATFORMS_TO_BUILD[@]}; do
 
 	build_libffi $p && build_llvm $p && prepare_llvm $p
 done
-
 
