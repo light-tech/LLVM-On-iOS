@@ -1,12 +1,8 @@
 name: Build LLVM XCFrameworks for Release
 on: [push]
 jobs:
-  build-llvm:
+  prepare-build-tools:
     runs-on: macos-latest
-    strategy:
-      matrix:
-        platformArch: [iphoneos, iphonesimulator] # maccatalyst, iphonesimulator-arm64, maccatalyst-arm64
-    timeout-minutes: 1200
     steps:
       - uses: actions/checkout@v3
       - run: ./build-tools.sh
@@ -14,6 +10,24 @@ jobs:
           curl -OL https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
           unzip ninja-mac.zip
           mv ninja tools/bin
+      - run: tar -cJf tools.tar.xz tools/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: tools
+          path: tools.tar.xz
+
+  build-llvm:
+    needs: prepare-build-tools
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        platformArch: [iphoneos, iphonesimulator] # maccatalyst, iphonesimulator-arm64, maccatalyst-arm64
+    timeout-minutes: 1200
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+      - run: |
+          tar xzf tools/tools.tar.xz
           export PATH=$PATH:`pwd`/tools/bin
           ./build-llvm.sh ${{ matrix.platformArch }}
       - uses: actions/upload-artifact@v3
