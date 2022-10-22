@@ -21,7 +21,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        platformArch: [iphoneos, iphonesimulator] # maccatalyst, iphonesimulator-arm64, maccatalyst-arm64
+        platformArch: [iphoneos, iphonesimulator, iphonesimulator-arm64] # maccatalyst, maccatalyst-arm64
     timeout-minutes: 1200
     steps:
       - uses: actions/checkout@v3
