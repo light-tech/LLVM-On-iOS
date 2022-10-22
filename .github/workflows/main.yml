@@ -26,14 +26,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
-      - run: |
+      - name: Build LLVM for ${{ matrix.platformArch }}
+        run: |
           tar xzf tools/tools.tar.xz
           export PATH=$PATH:`pwd`/tools/bin
           ./build-llvm.sh ${{ matrix.platformArch }}
+      - run: tar -cJf LLVM-${{ matrix.platformArch }}.tar.xz LLVM-${{ matrix.platformArch }}/
       - uses: actions/upload-artifact@v3
         with:
           name: LLVM-${{ matrix.platformArch }}
-          path: LLVM-${{ matrix.platformArch }}/
+          path: LLVM-${{ matrix.platformArch }}.tar.xz
 
   create-xcframework:
     needs: build-llvm
@@ -41,7 +43,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
-      - run: ./create-xcframework.sh
+      - name: Extract artifacts
+        run: find . -name "*.tar.xz" -exec tar xzf {} \;
+      - name: Create XCFramework
+        run: ./create-xcframework.sh
       - run: tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
       - uses: actions/upload-artifact@v3
         with:
