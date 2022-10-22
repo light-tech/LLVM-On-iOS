@@ -1,12 +1,5 @@
 REPO_ROOT=`pwd`
 
-# List of frameworks included in the XCFramework (= AVAILABLE_PLATFORMS without architecture specifications)
-# iphoneos
-XCFRAMEWORK_PLATFORMS=(iphoneos iphonesimulator) # maccatalyst)
-
-# List of platforms that need to be merged using lipo due to presence of multiple architectures
-LIPO_PLATFORMS=(iphonesimulator) # maccatalyst)
-
 # Merge the LLVM.a for iphonesimulator & iphonesimulator-arm64 as well as maccatalyst & maccatalyst-arm64 using lipo
 # Input: Base platform (iphonesimulator or maccatalyst)
 function merge_archs() {
@@ -30,6 +23,14 @@ function merge_archs() {
         fi
     fi
 }
+
+
+# List of frameworks included in the XCFramework (= AVAILABLE_PLATFORMS without architecture specifications)
+# iphoneos
+XCFRAMEWORK_PLATFORMS=(iphoneos iphonesimulator) # maccatalyst)
+
+# List of platforms that need to be merged using lipo due to presence of multiple architectures
+LIPO_PLATFORMS=(iphonesimulator) # maccatalyst)
 
 for p in "${LIPO_PLATFORMS[@]}"; do
     merge_archs $p

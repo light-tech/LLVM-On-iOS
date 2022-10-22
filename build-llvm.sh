@@ -90,6 +90,34 @@ get_llvm_src() {
     mv llvm-project-15.0.3.src llvm-project
 }
 
+# Prepare the LLVM built for usage in Xcode
+prepare_llvm() {
+    local targetPlatformArch=$1
+
+    echo "Prepare LLVM for $targetPlatformArch"
+    cd $REPO_ROOT/LLVM-$targetPlatformArch
+
+    # Remove unnecessary executables and support files
+    rm -rf bin libexec share
+
+    # Move unused stuffs in lib to a temporary lib2 (restored when necessary)
+    mkdir lib2
+    mv lib/cmake lib2/
+    mv lib/*.dylib lib2/
+    mv lib/libc++* lib2/
+    rm -rf lib2 # Comment this if you want to keep
+
+    # Copy libffi
+    cp -r $libffiInstallDir/include/ffi ./include/
+    cp $libffiInstallDir/libffi.a ./lib/
+
+    # Combine all *.a into a single llvm.a for ease of use
+    libtool -static -o llvm.a lib/*.a
+
+    # Remove unnecessary lib files if packaging
+    rm -rf lib/*.a
+}
+
 # Build LLVM for a given iOS platform
 # Assumptions:
 #  * ninja was extracted at this repo root
@@ -97,6 +125,9 @@ get_llvm_src() {
 #  * libffi is either built or downloaded in relative location libffi/Release-*
 build_llvm() {
     local targetPlatformArch=$1
+
+    build_libffi $targetPlatformArch
+
     local llvmProjectSrcDir=$REPO_ROOT/llvm-project
     local llvmInstallDir=$REPO_ROOT/LLVM-$targetPlatformArch
 
@@ -171,40 +202,14 @@ build_llvm() {
 
     # Build and install
     cmake --build . --target install # >/dev/null 2>/dev/null
-}
 
-# Prepare the LLVM built for usage in Xcode
-prepare_llvm() {
-    local targetPlatformArch=$1
-
-    echo "Prepare LLVM for $targetPlatformArch"
-    cd $REPO_ROOT/LLVM-$targetPlatformArch
-
-    # Remove unnecessary executables and support files
-    rm -rf bin libexec share
-
-    # Move unused stuffs in lib to a temporary lib2 (restored when necessary)
-    mkdir lib2
-    mv lib/cmake lib2/
-    mv lib/*.dylib lib2/
-    mv lib/libc++* lib2/
-    rm -rf lib2 # Comment this if you want to keep
-
-    # Copy libffi
-    cp -r $libffiInstallDir/include/ffi ./include/
-    cp $libffiInstallDir/libffi.a ./lib/
-
-    # Combine all *.a into a single llvm.a for ease of use
-    libtool -static -o llvm.a lib/*.a
-
-    # Remove unnecessary lib files if packaging
-    rm -rf lib/*.a
+    prepare_llvm $targetPlatformArch
 }
 
 PLATFORMS_TO_BUILD=( "$@" )
 for p in ${PLATFORMS_TO_BUILD[@]}; do
     echo "Build LLVM library for $p"
 
-    build_libffi $p && build_llvm $p && prepare_llvm $p
+    build_llvm $p
 done
 
