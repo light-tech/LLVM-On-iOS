@@ -90,8 +90,9 @@ Our script [build-llvm.sh](build-llvm.sh) builds LLVM for several iOS platforms 
 
 At this repo root:
 ```shell
-./build-llvm.sh iphoneos iphonesimulator maccatalyst iphonesimulator-arm64 maccatalyst-arm64
-./create-xcframework.sh
+source build-llvm.sh
+build_llvm iphoneos # iphonesimulator maccatalyst iphonesimulator-arm64 maccatalyst-arm64
+create-xcframework
 ```
 (If you are building for use in your own development machine, you can skip some platforms that you do not need. For example, an M1 Macs can skip on `iphonesimulator maccatalyst` as those are meant for Intel Macs.)
 

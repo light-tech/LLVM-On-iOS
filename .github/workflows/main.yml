@@ -30,7 +30,7 @@ jobs:
         run: |
           tar xzf tools/tools.tar.xz
           export PATH=$PATH:`pwd`/tools/bin
-          ./build-llvm.sh ${{ matrix.platformArch }}
+          source build-llvm.sh && build_llvm ${{ matrix.platformArch }}
       - run: tar -cJf LLVM-${{ matrix.platformArch }}.tar.xz LLVM-${{ matrix.platformArch }}/
       - uses: actions/upload-artifact@v3
         with:
@@ -46,7 +46,7 @@ jobs:
       - name: Extract artifacts
         run: find . -name "*.tar.xz" -exec tar xzf {} \;
       - name: Create XCFramework
-        run: ./create-xcframework.sh
+        run: source build-llvm.sh && create_xcframework
       - run: tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
       - uses: actions/upload-artifact@v3
         with:
