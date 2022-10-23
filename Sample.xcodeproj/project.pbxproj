@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		B7FA402325EE383900563EDC /* LLVM.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FA402225EE383900563EDC /* LLVM.xcframework */; };
-		B7FCCC03287675E8004A6032 /* create-xcframework.sh in Resources */ = {isa = PBXBuildFile; fileRef = B7FCCC02287675E8004A6032 /* create-xcframework.sh */; };
 		C639E815254517EF004DB533 /* SampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C639E814254517EF004DB533 /* SampleApp.swift */; };
 		C639E817254517EF004DB533 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C639E816254517EF004DB533 /* ContentView.swift */; };
 		C639E819254517F0004DB533 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C639E818254517F0004DB533 /* Assets.xcassets */; };
@@ -24,7 +23,6 @@
 		B7923BE027FAA1CE003DE86D /* main.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; name = main.yml; path = .github/workflows/main.yml; sourceTree = SOURCE_ROOT; };
 		B7FA401A25EE377D00563EDC /* Sample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sample.entitlements; sourceTree = "<group>"; };
 		B7FA402225EE383900563EDC /* LLVM.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LLVM.xcframework; sourceTree = "<group>"; };
-		B7FCCC02287675E8004A6032 /* create-xcframework.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "create-xcframework.sh"; sourceTree = SOURCE_ROOT; };
 		C639E811254517EF004DB533 /* Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C639E814254517EF004DB533 /* SampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleApp.swift; sourceTree = "<group>"; };
 		C639E816254517EF004DB533 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -53,7 +51,6 @@
 			children = (
 				B7923BE027FAA1CE003DE86D /* main.yml */,
 				B76E87CE27C887770092565F /* build-llvm.sh */,
-				B7FCCC02287675E8004A6032 /* create-xcframework.sh */,
 				B76E87CD27C887770092565F /* build-tools.sh */,
 				B76E87CF27C887770092565F /* README.md */,
 			);
@@ -169,7 +166,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C639E81C254517F0004DB533 /* Preview Assets.xcassets in Resources */,
-				B7FCCC03287675E8004A6032 /* create-xcframework.sh in Resources */,
 				C639E819254517F0004DB533 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

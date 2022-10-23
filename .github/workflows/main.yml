@@ -46,7 +46,7 @@ jobs:
       - name: Extract artifacts
         run: find . -name "*.tar.xz" -exec tar xzf {} \;
       - name: Create XCFramework
-        run: source build-llvm.sh && create_xcframework
+        run: source build-llvm.sh && create_xcframework iphoneos iphonesimulator # maccatalyst
       - run: tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
       - uses: actions/upload-artifact@v3
         with:

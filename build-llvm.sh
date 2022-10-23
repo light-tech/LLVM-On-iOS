@@ -1,16 +1,10 @@
 # Build LLVM XCFramework
 #
-# The script arguments are the platforms to build
-#
 # We assume that all required build tools (CMake, ninja, etc.) are either installed and accessible in $PATH
 # or are available locally within this repo root at $REPO_ROOT/tools/bin (building on GitHub Action).
 
 # Assume that this script is source'd at this repo root
 export REPO_ROOT=`pwd`
-
-# List of platforms-architecture that we support
-# iphoneos iphonesimulator maccatalyst
-# AVAILABLE_PLATFORMS=(iphoneos iphonesimulator-arm64 maccatalyst-arm64)
 
 ### Setup $targetBasePlatform, $targetArch and $libffiInstallDir from platform-architecture string
 setup_variables() {
@@ -98,14 +92,14 @@ prepare_llvm() {
     cd $REPO_ROOT/LLVM-$targetPlatformArch
 
     # Remove unnecessary executables and support files
-    rm -rf bin libexec share
+    #rm -rf bin libexec share
 
     # Move unused stuffs in lib to a temporary lib2 (restored when necessary)
-    mkdir lib2
-    mv lib/cmake lib2/
-    mv lib/*.dylib lib2/
-    mv lib/libc++* lib2/
-    rm -rf lib2 # Comment this if you want to keep
+    #mkdir lib2
+    #mv lib/cmake lib2/
+    #mv lib/*.dylib lib2/
+    #mv lib/libc++* lib2/
+    #rm -rf lib2 # Comment this if you want to keep
 
     # Copy libffi
     cp -r $libffiInstallDir/include/ffi ./include/
@@ -207,50 +201,50 @@ build_llvm() {
 }
 
 # Merge the LLVM.a for iphonesimulator & iphonesimulator-arm64 as well as maccatalyst & maccatalyst-arm64 using lipo
-# Input: Base platform (iphonesimulator or maccatalyst)
+# Input: Base platform (either iphonesimulator or maccatalyst)
 merge_archs() {
-    local BASE_PLATFORM=$1
+    local targetBasePlatform=$1
     cd $REPO_ROOT
-    if [ -d LLVM-$BASE_PLATFORM ]
+    if [ -d LLVM-$targetBasePlatform ]
     then
-        if [ -d LLVM-$BASE_PLATFORM-arm64 ]
+        if [ -d LLVM-$targetBasePlatform-arm64 ]
         then
-            echo "Merge arm64 and x86_64 LLVM.a ($BASE_PLATFORM)"
-            cd LLVM-$BASE_PLATFORM
-            lipo llvm.a ../LLVM-$BASE_PLATFORM-arm64/llvm.a -output llvm_all_archs.a -create
+            echo "Merge arm64 and x86_64 LLVM.a ($targetBasePlatform)"
+            cd LLVM-$targetBasePlatform
+            lipo llvm.a ../LLVM-$targetBasePlatform-arm64/llvm.a -output llvm_all_archs.a -create
             test -f llvm_all_archs.a && rm llvm.a && mv llvm_all_archs.a llvm.a
             file llvm.a
         fi
     else
-        if [ -d LLVM-$BASE_PLATFORM-arm64 ]
+        if [ -d LLVM-$targetBasePlatform-arm64 ]
         then
-            echo "Rename LLVM-$BASE_PLATFORM-arm64 to LLVM-$BASE_PLATFORM"
-            mv LLVM-$BASE_PLATFORM-arm64 LLVM-$BASE_PLATFORM
+            echo "Rename LLVM-$targetBasePlatform-arm64 to LLVM-$targetBasePlatform"
+            mv LLVM-$targetBasePlatform-arm64 LLVM-$targetBasePlatform
         fi
     fi
 }
 
+# Input: List of (base) platforms to be included in the XCFramework
 create_xcframework() {
-    # List of frameworks included in the XCFramework (= AVAILABLE_PLATFORMS without architecture specifications)
-    # iphoneos
-    local XCFRAMEWORK_PLATFORMS=(iphoneos iphonesimulator) # maccatalyst)
+    local xcframeworkSupportedBasePlatforms=("$@")
 
-    # List of platforms that need to be merged using lipo due to presence of multiple architectures
-    local LIPO_PLATFORMS=(iphonesimulator) # maccatalyst)
-
-    for p in "${LIPO_PLATFORMS[@]}"; do
-        merge_archs $p
+    # Merge applicable platforms
+    for p in "${xcframeworkSupportedBasePlatforms[@]}"; do
+        if [ "$p" != "iphoneos" ]; then
+            merge_archs $p
+        fi
     done
 
-    local FRAMEWORKS_ARGS=()
-    for p in "${XCFRAMEWORK_PLATFORMS[@]}"; do
-        FRAMEWORKS_ARGS+=(-library LLVM-$p/llvm.a -headers LLVM-$p/include)
+    # Construct xcodebuild arguments
+    local xcodebuildCreateXCFArgs=()
+    for p in "${xcframeworkSupportedBasePlatforms[@]}"; do
+        xcodebuildCreateXCFArgs+=(-library LLVM-$p/llvm.a -headers LLVM-$p/include)
 
         cd $REPO_ROOT
         test -f libclang.tar.xz || echo "Create clang support headers archive" && tar -cJf libclang.tar.xz LLVM-$p/lib/clang/
     done
 
-    echo "Create XC framework with arguments" ${FRAMEWORKS_ARGS[@]}
+    echo "Create XC framework with arguments ${xcodebuildCreateXCFArgs[@]}"
     cd $REPO_ROOT
-    xcodebuild -create-xcframework "${FRAMEWORKS_ARGS[@]}" -output LLVM.xcframework
+    xcodebuild -create-xcframework "${xcodebuildCreateXCFArgs[@]}" -output LLVM.xcframework
 }
