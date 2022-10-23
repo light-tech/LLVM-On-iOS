@@ -1,5 +1,4 @@
-LLVM on iOS
-===========
+# LLVM on iOS
 
 The goal of this project is to illustrate how to use LLVM + Clang to provide an iOS app with some scripting capability.
 
@@ -60,24 +59,19 @@ Another possibility would be to use the slower LLVM bytecode interpreter instead
 Also, check out [L* C++](https://apps.apple.com/us/app/l-c/id1562808282) on the App Store.
 I recommend reading [LLVM Programmer's Manual](https://llvm.org/docs/ProgrammersManual.html) before using LLVM API.
 
-Build LLVM for iOS
-------------------
+## Build LLVM for iOS
 
 ### The tools we needs
 
  * [Xcode](https://developer.apple.com/xcode/): Download from app store.
     - Note that we need the Xcode command line tools as well.
- * The common GNU tool [wget](https://www.gnu.org/software/wget/) (Optional): Unfortunately, pristine Mac installation does not come with this command line tool. You could
-    - [Compile it from source](https://osxdaily.com/2012/05/22/install-wget-mac-os-x/)
-    - Use Homebrew
-    - Skip this tool altogether and download the [LLVM source](https://github.com/llvm/llvm-project/releases/) yourself using a browser. (You need to get a file of the form `llvm-project-VERSION.src.tar.xz` that is about 100MB in size. Put it at this repo root.)
  * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to `$PATH`.
  * [Ninja](https://ninja-build.org/): Download the [binary](https://github.com/ninja-build/ninja/releases) and add it to `$PATH`.
  * Various GNU build tools [autoconf](https://www.gnu.org/software/autoconf/), [automake](https://www.gnu.org/software/automake/) and [libtool](https://www.gnu.org/software/libtool/): You can use our script `build-tools.sh` to create a local copy for building LLVM.
 
 Except for Xcode, the other items can be easily installed with Homebrew:
 ```shell
-brew install wget cmake ninja autoconf automake libtool
+brew install cmake ninja autoconf automake libtool
 ```
 
 _WARNING_: It has come to our attention that LLVM's CMake Build configuration have some dependency discovery that might be interfered by Homebrew. For example, LLVM depends on `libz` that is both supplied by Xcode and Homebrew. Since we are building for iOS, we really want the Xcode version of the library. But CMake can discover the Homebrew version and uses it instead! So you might want to build on a pristine machine. Don't get yourself **Homescrewed**<sup>TM</sup>!
@@ -92,14 +86,13 @@ At this repo root:
 ```shell
 source build-llvm.sh
 build_llvm iphoneos # iphonesimulator maccatalyst iphonesimulator-arm64 maccatalyst-arm64
-create-xcframework
+create-xcframework iphoneos # iphonesimulator maccatalyst
 ```
 (If you are building for use in your own development machine, you can skip some platforms that you do not need. For example, an M1 Macs can skip on `iphonesimulator maccatalyst` as those are meant for Intel Macs.)
 
 Our prebuilt release are built with [GitHub Actions](https://github.com/light-tech/LLVM-On-iOS/actions).
 
-Behind the Scene
-----------------
+## Behind the Scene
 
 These days, you probably want to write your app in _Swift_ whereas LLVM library is written in _C++_ so we need to create a _bridge_ to expose LLVM backend to your app Swift frontend. This could be accomplished via Objective-C as an intermediate language:
 ```

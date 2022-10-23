@@ -21,7 +21,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        platformArch: [iphoneos, iphonesimulator, iphonesimulator-arm64] # maccatalyst, maccatalyst-arm64
+        platformArch: [iphoneos, iphonesimulator, iphonesimulator-arm64, maccatalyst, maccatalyst-arm64]
     timeout-minutes: 1200
     steps:
       - uses: actions/checkout@v3
@@ -45,8 +45,9 @@ jobs:
       - uses: actions/download-artifact@v3
       - name: Extract artifacts
         run: find . -name "*.tar.xz" -exec tar xzf {} \;
+
       - name: Create XCFramework
-        run: source build-llvm.sh && create_xcframework iphoneos iphonesimulator # maccatalyst
+        run: source build-llvm.sh && create_xcframework iphoneos iphonesimulator maccatalyst
       - run: tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
       - uses: actions/upload-artifact@v3
         with:

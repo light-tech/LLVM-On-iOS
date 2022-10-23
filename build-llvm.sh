@@ -108,6 +108,12 @@ prepare_llvm() {
     # Combine all *.a into a single llvm.a for ease of use
     libtool -static -o llvm.a lib/*.a
 
+    # This is to check if we find platform 1 (macOS desktop) in the mixed with platform 6 (macCatalyst).
+    # This reveals that the assembly file blake3_sse41_x86-64_unix.S is not compiled for macCatalyst!
+    # Looking at BLAKE3 https://github.com/llvm/clangir/blob/main/llvm/lib/Support/BLAKE3/CMakeLists.txt
+    # reveals that we want to configure LLVM with LLVM_DISABLE_ASSEMBLY_FILES.
+    otool -l llvm.a
+
     # Remove unnecessary lib files if packaging
     rm -rf lib/*.a
 }
@@ -152,6 +158,7 @@ build_llvm() {
         -DLLVM_ENABLE_RTTI=OFF \
         -DLLVM_ENABLE_TERMINFO=OFF \
         -DLLVM_ENABLE_FFI=ON \
+        -DLLVM_DISABLE_ASSEMBLY_FILES=ON \
         -DFFI_INCLUDE_DIR=$libffiInstallDir/include/ffi \
         -DFFI_LIBRARY_DIR=$libffiInstallDir \
         -DCMAKE_BUILD_TYPE=Release \
