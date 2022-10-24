@@ -46,14 +46,23 @@ jobs:
       - name: Extract artifacts
         run: find . -name "*.tar.xz" -exec tar xzf {} \;
 
-      - name: Create XCFramework
+      - name: Create XCFramework for Intel Macs
         run: source build-llvm.sh && create_xcframework iphoneos iphonesimulator maccatalyst
-      - run: tar -cJf LLVM.xcframework.tar.xz LLVM.xcframework
+      - run: tar -cJf LLVM_Intel.xcframework.tar.xz LLVM.xcframework
       - uses: actions/upload-artifact@v3
         with:
-          name: LLVM.xcframework
-          path: LLVM.xcframework.tar.xz
+          name: LLVM_Intel
+          path: LLVM_Intel.xcframework.tar.xz
+
       - uses: actions/upload-artifact@v3
         with:
           name: libclang
           path: libclang.tar.xz
+
+      - name: Create XCFramework for M1 Macs
+        run: source build-llvm.sh && rm -rf LLVM.xcframework && create_xcframework iphoneos iphonesimulator-arm64 maccatalyst-arm64
+      - run: tar -cJf LLVM_M1.xcframework.tar.xz LLVM.xcframework
+      - uses: actions/upload-artifact@v3
+        with:
+          name: LLVM_M1
+          path: LLVM_M1.xcframework.tar.xz

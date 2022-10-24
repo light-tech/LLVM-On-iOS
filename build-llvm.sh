@@ -236,11 +236,11 @@ create_xcframework() {
     local xcframeworkSupportedBasePlatforms=("$@")
 
     # Merge applicable platforms
-    for p in "${xcframeworkSupportedBasePlatforms[@]}"; do
-        if [ "$p" != "iphoneos" ]; then
-            merge_archs $p
-        fi
-    done
+    #for p in "${xcframeworkSupportedBasePlatforms[@]}"; do
+    #    if [ "$p" != "iphoneos" ]; then
+    #        merge_archs $p
+    #    fi
+    #done
 
     # Construct xcodebuild arguments
     local xcodebuildCreateXCFArgs=()
