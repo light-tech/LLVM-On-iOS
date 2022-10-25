@@ -40,6 +40,8 @@ int main() {
                 VStack {
                     Button("Interpret Sample Program", action: interpretSampleProgram)
                     TextEditor(text: $program)
+                        .disableAutocorrection(true)
+                        .font(.body.monospaced())
                 }.tabItem {
                     Image(systemName: "doc.plaintext")
                     Text("Source code")
@@ -60,6 +62,8 @@ int main() {
                     .padding()
                 HStack {
                     TextEditor(text: $program)
+                        .disableAutocorrection(true)
+                        .font(.body.monospaced())
                     Divider()
                     VStack {
                         Text(compilationOutput)
@@ -84,6 +88,19 @@ int main() {
         let output = llvm.interpretProgram(filePath.path.data(using: .utf8)!)
         compilationOutput = output.compilationOutput!
         programOutput = output.programOutput!
+    }
+}
+
+// Disable smart quote (replacing ' and " with Unicode characters) as this prevents compilation
+// https://stackoverflow.com/questions/66432017/disable-auto-replacement-of-punctuation-in-swiftui-texteditor
+// This does not work on Mac Catalyst: change in System preferences > Keyboard > Text > for Double/Single Quotes, choose the last quote style (amongst the 8 possible types).
+// https://developer.apple.com/forums/thread/124410
+// Note that simply uncheck "Use smart quotes and dashes" does not work either.
+extension UITextView {
+    open override var frame: CGRect {
+        didSet {
+            self.smartQuotesType = UITextSmartQuotesType.no
+        }
     }
 }
 

@@ -19,5 +19,5 @@ xcuserdata/
 llvm-project/
 libffi/
 tools/
-LLVM.xcframework/
+LLVM**.xcframework/
 
