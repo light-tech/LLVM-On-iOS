@@ -20,4 +20,5 @@ llvm-project/
 libffi/
 tools/
 LLVM**.xcframework/
+tmp/
 

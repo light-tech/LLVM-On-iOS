@@ -70,7 +70,7 @@ build_libffi() {
     # The first run generates necessary headers whereas the second run actually compiles the library
     local libffiBuildDir=$REPO_ROOT/libffi
     for r in {1..2}; do
-        xcodebuild -scheme libffi-iOS "${xcodeSdkArgs[@]}" -configuration Release SYMROOT="$libffiBuildDir" >/dev/null 2>/dev/null
+        xcodebuild -scheme libffi-iOS "${xcodeSdkArgs[@]}" -configuration Release SYMROOT="$libffiBuildDir" # >/dev/null 2>/dev/null
     done
 
     lipo -info $libffiInstallDir/libffi.a

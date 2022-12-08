@@ -1,34 +1,23 @@
-name: Build LLVM XCFrameworks for Release
-on: [push]
+name: Build LLVM XCFrameworks for Testing
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
 jobs:
-  prepare-build-tools:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: ./build-tools.sh
-      - run: |
-          curl -OL https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip
-          unzip ninja-mac.zip
-          mv ninja tools/bin
-      - run: tar -cJf tools.tar.xz tools/
-      - uses: actions/upload-artifact@v3
-        with:
-          name: tools
-          path: tools.tar.xz
-
   build-llvm:
-    needs: prepare-build-tools
     runs-on: macos-latest
     strategy:
       matrix:
-        platformArch: [iphoneos, iphonesimulator, iphonesimulator-arm64, maccatalyst, maccatalyst-arm64]
+        platformArch: [iphoneos]
     timeout-minutes: 1200
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
+      - run: curl -OL https://github.com/light-tech/LLVM-On-iOS/releases/download/llvm15.0.3/tools.tar.xz && tar xzf tools.tar.xz
       - name: Build LLVM for ${{ matrix.platformArch }}
         run: |
-          tar xzf tools/tools.tar.xz
+          echo "Python is at $(which python)"
           export PATH=$PATH:`pwd`/tools/bin
           source build-llvm.sh && build_llvm ${{ matrix.platformArch }}
       - run: tar -cJf LLVM-${{ matrix.platformArch }}.tar.xz LLVM-${{ matrix.platformArch }}/
@@ -40,6 +29,7 @@ jobs:
   create-xcframework:
     needs: build-llvm
     runs-on: macos-latest
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
