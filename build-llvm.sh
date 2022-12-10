@@ -58,34 +58,19 @@ build_libffi() {
     mv libffi-3.4.4 libffi
     cd libffi
 
-    echo "Run generate-darwin-source-and-headers.py manually"
-    python generate-darwin-source-and-headers.py --only-ios
-    ls -R
+    export CC=clang
 
+    local buildDir=""
     case $targetPlatformArch in
         "iphoneos")
-            xcodeSdkArgs=(-sdk $targetBasePlatform);;
-
-        "iphonesimulator"|"iphonesimulator-arm64")
-            xcodeSdkArgs=(-sdk $targetBasePlatform -arch $targetArch);;
-
-        "maccatalyst"|"maccatalyst-arm64")
-            xcodeSdkArgs=(-arch $targetArch);; # Do not set SDK
-
-        *)
-            echo "Unknown or missing platform!"
-            exit 1;;
+            export CFLAGS="-isysroot $(xcodebuild -version -sdk iphoneos Path) -arch arm64"
+            buildDir=aarch64-apple-ios
+            hostTriple=arm64-apple-ios;;
     esac
 
-    # xcodebuild -list
-    # Note that we need to run xcodebuild twice
-    # The first run generates necessary headers whereas the second run actually compiles the library
-    local libffiBuildDir=$REPO_ROOT/libffi
-    for r in {1..2}; do
-        xcodebuild -scheme libffi-iOS "${xcodeSdkArgs[@]}" -configuration Release SYMROOT="$libffiBuildDir" # >/dev/null 2>/dev/null
-    done
-
-    lipo -info $libffiInstallDir/libffi.a
+    ./configure --prefix=$libffiInstallDir --host=$hostTriple
+    cd $buildDir && make && make install
+    # ls -R $libffiInstallDir
 }
 
 get_llvm_src() {

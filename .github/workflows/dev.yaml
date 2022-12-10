@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - libffi_no_xcode
 jobs:
   build-llvm:
     runs-on: macos-latest
@@ -15,7 +16,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
       # - run: curl -OL https://github.com/light-tech/LLVM-On-iOS/releases/download/llvm15.0.3/tools.tar.xz && tar xzf tools.tar.xz
-      - run: brew install autoconf automake libtool ninja
+      - run: brew install ninja # autoconf automake libtool
       - name: Build LLVM for ${{ matrix.platformArch }}
         run: |
           echo "Python is at $(which python)"
