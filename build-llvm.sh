@@ -47,7 +47,15 @@ build_libffi() {
     echo "Build libffi for $targetPlatformArch"
 
     cd $REPO_ROOT
-    test -d libffi || git clone https://github.com/libffi/libffi.git
+    # test -d libffi || git clone https://github.com/libffi/libffi.git
+    # For some reason, Github Action macOS host delete python in /usr/bin and put it in /usr/local/bin
+    # So we temporarily remove the path. Should not be needed if build locally.
+    # sed -i.bak 's_/usr/bin/python_python_g' libffi.xcodeproj/project.pbxproj
+    # git diff
+
+    curl -L -o libffi.tar.gz https://github.com/libffi/libffi/releases/download/v3.4.4/libffi-3.4.4.tar.gz
+    tar xzf libffi.tar.gz
+    mv libffi-3.4.4 libffi
     cd libffi
 
     case $targetPlatformArch in
