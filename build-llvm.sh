@@ -58,6 +58,10 @@ build_libffi() {
     mv libffi-3.4.4 libffi
     cd libffi
 
+    echo "Run generate-darwin-source-and-headers.py manually"
+    python generate-darwin-source-and-headers.py --only-ios
+    ls -R
+
     case $targetPlatformArch in
         "iphoneos")
             xcodeSdkArgs=(-sdk $targetBasePlatform);;
