@@ -76,9 +76,9 @@ build_libffi() {
 get_llvm_src() {
     #git clone --single-branch --branch release/14.x https://github.com/llvm/llvm-project.git
 
-    curl -OL https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.3/llvm-project-15.0.3.src.tar.xz
-    tar xzf llvm-project-15.0.3.src.tar.xz
-    mv llvm-project-15.0.3.src llvm-project
+    curl -OL https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/llvm-project-15.0.6.src.tar.xz
+    tar xzf llvm-project-15.0.6.src.tar.xz
+    mv llvm-project-15.0.6.src llvm-project
 }
 
 # Prepare the LLVM built for usage in Xcode
@@ -158,6 +158,9 @@ build_llvm() {
         -DLLVM_DISABLE_ASSEMBLY_FILES=ON \
         -DFFI_INCLUDE_DIR=$libffiInstallDir/include \
         -DFFI_LIBRARY_DIR=$libffiInstallDir/lib \
+        -DHAVE_POSIX_REGEX=0 \
+        -DHAVE_STEADY_CLOCK=0 \
+        -DCMAKE_VERBOSE_MAKEFILE=ON \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$llvmInstallDir \
         -DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake)

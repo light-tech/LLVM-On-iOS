@@ -7,7 +7,7 @@ on:
       - libffi_no_xcode
 jobs:
   build-llvm:
-    runs-on: macos-latest
+    runs-on: macos-11
     strategy:
       matrix:
         platformArch: [iphoneos]
@@ -15,8 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
-      # - run: curl -OL https://github.com/light-tech/LLVM-On-iOS/releases/download/llvm15.0.3/tools.tar.xz && tar xzf tools.tar.xz
-      - run: brew install ninja # autoconf automake libtool
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v1.12
+        with:
+          cmake-version: '3.23.x'
+      - run: curl -OL https://github.com/light-tech/LLVM-On-iOS/releases/download/llvm15.0.3/tools.tar.xz && tar xzf tools.tar.xz
+      # - run: brew install ninja # autoconf automake libtool
       - name: Build LLVM for ${{ matrix.platformArch }}
         run: |
           echo "Python is at $(which python)"
