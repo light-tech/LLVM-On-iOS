@@ -156,8 +156,8 @@ build_llvm() {
         -DLLVM_ENABLE_TERMINFO=OFF \
         -DLLVM_ENABLE_FFI=ON \
         -DLLVM_DISABLE_ASSEMBLY_FILES=ON \
-        -DFFI_INCLUDE_DIR=$libffiInstallDir/include/ffi \
-        -DFFI_LIBRARY_DIR=$libffiInstallDir \
+        -DFFI_INCLUDE_DIR=$libffiInstallDir/include \
+        -DFFI_LIBRARY_DIR=$libffiInstallDir/lib \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$llvmInstallDir \
         -DCMAKE_TOOLCHAIN_FILE=../llvm/cmake/platforms/iOS.cmake)
