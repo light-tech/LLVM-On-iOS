@@ -2,7 +2,7 @@ name: Build LLVM XCFrameworks for Release
 on: [push]
 jobs:
   prepare-build-tools:
-    runs-on: macos-latest
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v3
       - run: ./build-tools.sh
@@ -18,7 +18,7 @@ jobs:
 
   build-llvm:
     needs: prepare-build-tools
-    runs-on: macos-latest
+    runs-on: macos-11
     strategy:
       matrix:
         platformArch: [iphoneos, iphonesimulator, iphonesimulator-arm64, maccatalyst, maccatalyst-arm64]
@@ -39,7 +39,7 @@ jobs:
 
   create-xcframework:
     needs: build-llvm
-    runs-on: macos-latest
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
