@@ -47,8 +47,22 @@ build_libffi() {
     echo "Build libffi for $targetPlatformArch"
 
     cd $REPO_ROOT
-    test -d libffi || git clone https://github.com/libffi/libffi.git
+    local libffiReleaseSrcArchiveUrl=https://github.com/libffi/libffi/archive/refs/tags/v3.4.4.tar.gz
+    local libffiReleaseUrl=https://github.com/libffi/libffi/releases/download/v3.4.4/libffi-3.4.4.tar.gz
+    # test -d libffi || git clone https://github.com/libffi/libffi.git
+    # curl -L -o libffi.tar.gz $libffiReleaseSrcArchive
+    curl -L -o libffi.tar.gz $libffiReleaseUrl
+    tar xzf libffi.tar.gz
+    mv libffi-3.4.4 libffi
     cd libffi
+
+    # Imitate libffi continuous integration .ci/build.sh script
+    # Note that we do not need to run autogen if we are using the 'release' $libffiReleaseUrl as libffi dev already
+    # runs it to generate configure script.
+    # It is only needed when using the source archive $libffiReleaseSrcArchiveUrl (zipped repo at certain commit)
+    # or when we build on the source repo.
+    # ./autogen.sh
+    ./generate-darwin-source-and-headers.py --only-ios
 
     case $targetPlatformArch in
         "iphoneos")
@@ -70,7 +84,7 @@ build_libffi() {
     # The first run generates necessary headers whereas the second run actually compiles the library
     local libffiBuildDir=$REPO_ROOT/libffi
     for r in {1..2}; do
-        xcodebuild -scheme libffi-iOS "${xcodeSdkArgs[@]}" -configuration Release SYMROOT="$libffiBuildDir" >/dev/null 2>/dev/null
+        xcodebuild -scheme libffi-iOS "${xcodeSdkArgs[@]}" -configuration Release SYMROOT="$libffiBuildDir" # >/dev/null 2>/dev/null
     done
 
     lipo -info $libffiInstallDir/libffi.a
