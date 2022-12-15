@@ -3,6 +3,7 @@ on: [push]
 jobs:
   prepare-build-tools:
     runs-on: macos-11
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v3
       - run: ./build-tools.sh
@@ -17,7 +18,7 @@ jobs:
           path: tools.tar.xz
 
   build-llvm:
-    needs: prepare-build-tools
+    # needs: prepare-build-tools
     runs-on: macos-11
     strategy:
       matrix:
@@ -26,11 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
+      - run: brew install ninja
       - name: Build LLVM for ${{ matrix.platformArch }}
-        run: |
-          tar xzf tools/tools.tar.xz
-          export PATH=$PATH:`pwd`/tools/bin
-          source build-llvm.sh && build_llvm ${{ matrix.platformArch }}
+        run: source build-llvm.sh && build_llvm ${{ matrix.platformArch }}
       - run: tar -cJf LLVM-${{ matrix.platformArch }}.tar.xz LLVM-${{ matrix.platformArch }}/
       - uses: actions/upload-artifact@v3
         with:
