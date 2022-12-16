@@ -35,8 +35,6 @@ setup_variables() {
             echo "Unknown or missing platform!"
             exit 1;;
     esac
-
-    libffiInstallDir=$REPO_ROOT/libffi/Release-$targetBasePlatform
 }
 
 # Build libffi for a given platform
@@ -87,7 +85,9 @@ build_libffi() {
         xcodebuild -scheme libffi-iOS "${xcodeSdkArgs[@]}" -configuration Release SYMROOT="$libffiBuildDir" # >/dev/null 2>/dev/null
     done
 
-    lipo -info $libffiInstallDir/libffi.a
+    local libffiInstallDir=$libffiBuildDir/Release-$targetBasePlatform
+    # lipo -info $libffiInstallDir/libffi.a
+    mv $libffiInstallDir $REPO_ROOT/libffi-$targetPlatformArch
 }
 
 get_llvm_src() {
@@ -140,10 +140,11 @@ prepare_llvm() {
 build_llvm() {
     local targetPlatformArch=$1
 
-    build_libffi $targetPlatformArch
+    # build_libffi $targetPlatformArch
 
     local llvmProjectSrcDir=$REPO_ROOT/llvm-project
     local llvmInstallDir=$REPO_ROOT/LLVM-$targetPlatformArch
+    libffiInstallDir=$REPO_ROOT/libffi-$targetPlatformArch
 
     setup_variables $targetPlatformArch
 

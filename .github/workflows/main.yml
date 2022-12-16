@@ -17,8 +17,23 @@ jobs:
           name: tools
           path: tools.tar.xz
 
+  build-libffi:
+    runs-on: macos-11
+    strategy:
+      matrix:
+        platformArch: [iphoneos, iphonesimulator, iphonesimulator-arm64, maccatalyst, maccatalyst-arm64]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build libffi for ${{ matrix.platformArch }}
+        run: source build-llvm.sh && build_libffi ${{ matrix.platformArch }}
+      - run: tar -cJf libffi-${{ matrix.platformArch }}.tar.xz libffi-${{ matrix.platformArch }}/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: libffi-${{ matrix.platformArch }}
+          path: libffi-${{ matrix.platformArch }}.tar.xz
+
   build-llvm:
-    # needs: prepare-build-tools
+    needs: build-libffi # prepare-build-tools
     runs-on: macos-11
     strategy:
       matrix:
@@ -27,6 +42,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
+      - name: Extract artifacts
+        run: find . -name "*.tar.xz" -exec tar xzf {} \;
       - run: brew install ninja
       - name: Build LLVM for ${{ matrix.platformArch }}
         run: source build-llvm.sh && build_llvm ${{ matrix.platformArch }}
