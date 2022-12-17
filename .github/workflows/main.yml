@@ -34,7 +34,7 @@ jobs:
 
   build-llvm:
     needs: build-libffi # prepare-build-tools
-    runs-on: macos-11
+    runs-on: macos-12
     strategy:
       matrix:
         platformArch: [iphoneos, iphonesimulator, iphonesimulator-arm64, maccatalyst, maccatalyst-arm64]
@@ -55,7 +55,7 @@ jobs:
 
   create-xcframework:
     needs: build-llvm
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
