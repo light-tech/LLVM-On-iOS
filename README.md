@@ -7,7 +7,7 @@ The goal of this project is to illustrate how to use LLVM + Clang to provide an 
 
 For the eager reader, we provide a sample iOS app project which has **NO license attached** so feel free to do whatever you want with it.
 In this app, we use Clang's C interpreter example located in `examples/clang-interpreter/main.cpp` of Clang source code to _interpret a simple C++ program_ and _print out the output on the iOS app's user interface_.
-(The file was renamed to `Interpreter.cpp` to fit in with iOS development style.)
+(The file was renamed to `Interpreter.cpp` to fit in with iOS development style. Also note that the example was removed from LLVM 14 but it should be available prior.)
 The code is pretty much copied verbatim except for some minor modifications, namely:
 
 1. We change the `main` function name to `clangInterpret` since iOS app already has `main` function.
@@ -67,24 +67,26 @@ I recommend reading [LLVM Programmer's Manual](https://llvm.org/docs/Programmers
     - Note that we need the Xcode command line tools as well.
  * [CMake](https://cmake.org/download/): See [installation instruction](https://tudat.tudelft.nl/installation/setupDevMacOs.html) to add to `$PATH`.
  * [Ninja](https://ninja-build.org/): Download the [binary](https://github.com/ninja-build/ninja/releases) and add it to `$PATH`.
- * Various GNU build tools [autoconf](https://www.gnu.org/software/autoconf/), [automake](https://www.gnu.org/software/automake/) and [libtool](https://www.gnu.org/software/libtool/): You can use our script `build-tools.sh` to create a local copy for building LLVM.
 
 Except for Xcode, the other items can be easily installed with Homebrew:
 ```shell
-brew install cmake ninja autoconf automake libtool
+brew install cmake ninja
 ```
 
 _WARNING_: It has come to our attention that LLVM's CMake Build configuration have some dependency discovery that might be interfered by Homebrew. For example, LLVM depends on `libz` that is both supplied by Xcode and Homebrew. Since we are building for iOS, we really want the Xcode version of the library. But CMake can discover the Homebrew version and uses it instead! So you might want to build on a pristine machine. Don't get yourself **Homescrewed**<sup>TM</sup>!
 
 ### Build LLVM and co.
 
-Apple has introduced [XCFramework](https://developer.apple.com/videos/play/wwdc2019/416/) to allow packaging a library for multiple-platforms (iOS, Simulator, watchOS, macOS) and CPU architectures (x86_64, arm64) that could be easily added to a project.
+Apple has introduced [XCFramework](https://developer.apple.com/videos/play/wwdc2019/416/) to allow packaging a library for multiple-platforms (iOS, Simulator, watchOS, macOS) and CPU architectures (x86_64, arm64) that could be easily added to a project so that we do not have to switch out the libraries when we build the app for different targets (e.g. testing the app on real iPhone arm64 vs on the simulator x86_64).
 
-Our script [build-llvm.sh](build-llvm.sh) builds LLVM for several iOS platforms and  [create-xcframework.sh](create-xcframework.sh) packages it as an XCFramework so we do not have to switch out the libraries when we build the app for different targets (e.g. testing the app on real iPhone arm64 vs simulator x86_64). The script assumes the various tools aforementioned are installed and asccessible in `$PATH`.
+Our script [build-llvm.sh](build-llvm.sh) provides functions to build LLVM and libffi dependency for several iOS platforms.
+It also has a function `create_xcframework` to produce an XCFramework from them.
+The script assumes the various tools aforementioned are installed and asccessible in `$PATH`.
 
 At this repo root:
 ```shell
 source build-llvm.sh
+build_libffi iphoneos
 build_llvm iphoneos # iphonesimulator maccatalyst iphonesimulator-arm64 maccatalyst-arm64
 create-xcframework iphoneos # iphonesimulator maccatalyst
 ```

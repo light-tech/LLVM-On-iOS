@@ -1,12 +1,17 @@
 # Build LLVM XCFramework
 #
-# We assume that all required build tools (CMake, ninja, etc.) are either installed and accessible in $PATH
-# or are available locally within this repo root at $REPO_ROOT/tools/bin (building on GitHub Action).
+# We assume that all required build tools (CMake, ninja, etc.) are either installed and accessible in $PATH.
 
 # Assume that this script is source'd at this repo root
 export REPO_ROOT=`pwd`
 
-### Setup $targetBasePlatform, $targetArch and $libffiInstallDir from platform-architecture string
+### Setup the environment variable $targetBasePlatform and $targetArch from the platform-architecture string
+### Argument: the platform-architecture string, must be one of the following
+###
+###                 iphoneos iphonesimulator iphonesimulator-arm64 maccatalyst maccatalyst-arm64
+###
+### The base platform would be one of iphoneos iphonesimulator maccatalyst and the architecture
+### would be either arm64 or x86_64.
 setup_variables() {
     local targetPlatformArch=$1
 
@@ -37,7 +42,8 @@ setup_variables() {
     esac
 }
 
-# Build libffi for a given platform
+### Build libffi for a given platform
+### Argument: the platform-architecture
 build_libffi() {
     local targetPlatformArch=$1
     setup_variables $targetPlatformArch
@@ -86,7 +92,7 @@ build_libffi() {
     done
 
     local libffiInstallDir=$libffiBuildDir/Release-$targetBasePlatform
-    # lipo -info $libffiInstallDir/libffi.a
+    lipo -info $libffiInstallDir/libffi.a
     mv $libffiInstallDir $REPO_ROOT/libffi-$targetPlatformArch
 }
 
@@ -98,22 +104,14 @@ get_llvm_src() {
     mv llvm-project-15.0.6.src llvm-project
 }
 
-# Prepare the LLVM built for usage in Xcode
+### Prepare the LLVM built for usage in Xcode
+### Argument: the platform-architecture
 prepare_llvm() {
     local targetPlatformArch=$1
+    local libffiInstallDir=$REPO_ROOT/libffi-$targetPlatformArch
 
     echo "Prepare LLVM for $targetPlatformArch"
     cd $REPO_ROOT/LLVM-$targetPlatformArch
-
-    # Remove unnecessary executables and support files
-    #rm -rf bin libexec share
-
-    # Move unused stuffs in lib to a temporary lib2 (restored when necessary)
-    #mkdir lib2
-    #mv lib/cmake lib2/
-    #mv lib/*.dylib lib2/
-    #mv lib/libc++* lib2/
-    #rm -rf lib2 # Comment this if you want to keep
 
     # Copy libffi
     cp -r $libffiInstallDir/include/ffi ./include/
@@ -132,19 +130,16 @@ prepare_llvm() {
     rm -rf lib/*.a
 }
 
-# Build LLVM for a given iOS platform
-# Assumptions:
-#  * ninja was extracted at this repo root
-#  * LLVM is checked out inside this repo
-#  * libffi is either built or downloaded in relative location libffi/Release-*
+### Build LLVM for a given iOS platform
+### Argument: the platform-architecture
+### Assumptions:
+###  * LLVM is checked out inside this repo
+###  * libffi is built at libffi-[platform]
 build_llvm() {
     local targetPlatformArch=$1
-
-    # build_libffi $targetPlatformArch
-
     local llvmProjectSrcDir=$REPO_ROOT/llvm-project
     local llvmInstallDir=$REPO_ROOT/LLVM-$targetPlatformArch
-    libffiInstallDir=$REPO_ROOT/libffi-$targetPlatformArch
+    local libffiInstallDir=$REPO_ROOT/libffi-$targetPlatformArch
 
     setup_variables $targetPlatformArch
 
@@ -247,6 +242,7 @@ merge_archs() {
 }
 
 # Input: List of (base) platforms to be included in the XCFramework
+# Argument: the list of platform-architectures to include in the framework
 create_xcframework() {
     local xcframeworkSupportedBasePlatforms=("$@")
 
