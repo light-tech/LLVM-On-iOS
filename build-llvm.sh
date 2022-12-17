@@ -217,45 +217,14 @@ build_llvm() {
     prepare_llvm $targetPlatformArch
 }
 
-# Merge the LLVM.a for iphonesimulator & iphonesimulator-arm64 as well as maccatalyst & maccatalyst-arm64 using lipo
-# Input: Base platform (either iphonesimulator or maccatalyst)
-merge_archs() {
-    local targetBasePlatform=$1
-    cd $REPO_ROOT
-    if [ -d LLVM-$targetBasePlatform ]
-    then
-        if [ -d LLVM-$targetBasePlatform-arm64 ]
-        then
-            echo "Merge arm64 and x86_64 LLVM.a ($targetBasePlatform)"
-            cd LLVM-$targetBasePlatform
-            lipo llvm.a ../LLVM-$targetBasePlatform-arm64/llvm.a -output llvm_all_archs.a -create
-            test -f llvm_all_archs.a && rm llvm.a && mv llvm_all_archs.a llvm.a
-            file llvm.a
-        fi
-    else
-        if [ -d LLVM-$targetBasePlatform-arm64 ]
-        then
-            echo "Rename LLVM-$targetBasePlatform-arm64 to LLVM-$targetBasePlatform"
-            mv LLVM-$targetBasePlatform-arm64 LLVM-$targetBasePlatform
-        fi
-    fi
-}
-
 # Input: List of (base) platforms to be included in the XCFramework
 # Argument: the list of platform-architectures to include in the framework
 create_xcframework() {
-    local xcframeworkSupportedBasePlatforms=("$@")
-
-    # Merge applicable platforms
-    #for p in "${xcframeworkSupportedBasePlatforms[@]}"; do
-    #    if [ "$p" != "iphoneos" ]; then
-    #        merge_archs $p
-    #    fi
-    #done
+    local xcframeworkSupportedPlatforms=("$@")
 
     # Construct xcodebuild arguments
     local xcodebuildCreateXCFArgs=()
-    for p in "${xcframeworkSupportedBasePlatforms[@]}"; do
+    for p in "${xcframeworkSupportedPlatforms[@]}"; do
         xcodebuildCreateXCFArgs+=(-library LLVM-$p/llvm.a -headers LLVM-$p/include)
 
         cd $REPO_ROOT
