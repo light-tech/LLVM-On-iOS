@@ -117,7 +117,7 @@ Combining these two articles is the basis for our Sample app.
 
 A typical approach to allow C++ in Swift-based iOS app will be using
  * _Swift_       : Anything iOS-related (UI, file system access, Internet, ...)
- * _Objective-C_ : Simple classes (like [`LLVMBridge`](Sample/Sample/LLVMBridge.h) in our Sample app) to expose service written in C++.
+ * _Objective-C_ : Simple classes (like [`LLVMBridge`](Sample/LLVMBridge.h) in our Sample app) to expose service written in C++.
                    The main role is to convert data types between C++ and Swift.
                    For example: Swift's `Data` to Objective-C's `NSData` to C++'s buffer `char*` (and length).
  * _C++_         : Actual implementation of processing functionality.
